@@ -415,11 +415,21 @@
     let categoryChartInstance = null;
     let yearChartInstance = null;
 
+// Загрузка данных при старте
     document.addEventListener('DOMContentLoaded', () => {
       fetch('generated/web_data.json')
         .then(res => res.json())
         .then(data => {
-          allData = data.map((item, index) => ({
+          // Автоматически находим массив, даже если он обёрнут в объект (data.items, data.records и т.д.)
+          const rawList = Array.isArray(data) 
+            ? data 
+            : (data.items || data.data || data.records || data.articles || Object.values(data)[0] || []);
+
+          if (!Array.isArray(rawList)) {
+            throw new Error('Не удалось извлечь список исследований из web_data.json');
+          }
+
+          allData = rawList.map((item, index) => ({
             id: String(item.id || index + 1),
             title: item.title || item.Title || 'Без названия',
             authors: item.authors || item.Authors || item.author || 'Автор не указан',
@@ -435,7 +445,7 @@
         })
         .catch(err => {
           console.error('Ошибка загрузки данных:', err);
-          document.getElementById('cardsGrid').innerHTML = '<div class="no-results">Ошибка загрузки файла web_data.json</div>';
+          document.getElementById('cardsGrid').innerHTML = '<div class="no-results">Ошибка загрузки или обработки файла web_data.json</div>';
         });
 
       document.getElementById('searchInput').addEventListener('input', applyFilters);
