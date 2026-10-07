@@ -479,7 +479,7 @@
     let categoryChartInstance = null;
     let yearChartInstance = null;
 
-    // Классификатор в 8 структурированных олимпийских направлений
+    // Классификатор в направления олимпизма (с категорией "Другие темы олимпизма")
     function mapToOlympicCategory(catRaw, titleRaw, summaryRaw) {
       const text = (String(catRaw) + ' ' + String(titleRaw) + ' ' + String(summaryRaw)).toLowerCase();
 
@@ -508,14 +508,16 @@
         return 'Подготовка олимпийского резерва';
       }
 
-      return 'Олимпийское образование и просвещение';
+      return 'Другие темы олимпизма';
     }
 
     // Расшифровка типов документов на русский язык
     function translateDocType(raw) {
-      if (!raw) return 'Научная статья';
+      if (!raw) return 'Другой тип документа';
       const val = String(raw).trim().toLowerCase();
-      if (['nr', 'ne', 'n/a', 'na', 'null', 'undefined', 'not specified'].includes(val)) return 'Научная статья';
+      if (['nr', 'ne', 'n/a', 'na', 'null', 'undefined', 'not specified', 'none', 'other'].includes(val)) {
+        return 'Другой тип документа';
+      }
 
       if (val.includes('dissertation') || val.includes('thesis') || val.includes('диссертац') || val.includes('автореферат')) return 'Диссертация';
       if (val.includes('conference') || val.includes('proceeding') || val.includes('конференц') || val.includes('доклад') || val.includes('материал')) return 'Материалы конференции';
@@ -525,14 +527,16 @@
       if (val.includes('patent') || val.includes('патент')) return 'Патент';
       if (val.includes('article') || val.includes('journal') || val.includes('статья') || val.includes('публикац')) return 'Научная статья';
 
-      return 'Научная статья';
+      return 'Другой тип документа';
     }
 
     // Расшифровка языков на русский язык
     function translateLanguage(raw) {
-      if (!raw) return 'Не указан';
+      if (!raw) return 'Другой язык / Не указан';
       const val = String(raw).trim().toLowerCase();
-      if (['nr', 'ne', 'n/a', 'na', 'null', 'undefined', 'not specified'].includes(val)) return 'Не указан';
+      if (['nr', 'ne', 'n/a', 'na', 'null', 'undefined', 'not specified', 'none', 'other'].includes(val)) {
+        return 'Другой язык / Не указан';
+      }
 
       if (val === 'ru' || val === 'rus' || val.includes('russian') || val.includes('рус')) return 'Русский';
       if (val === 'en' || val === 'eng' || val.includes('english') || val.includes('англ')) return 'Английский';
@@ -544,20 +548,27 @@
       if (val === 'it' || val === 'ita' || val.includes('italian') || val.includes('итал')) return 'Итальянский';
       if (val === 'pt' || val === 'por' || val.includes('portuguese') || val.includes('португ')) return 'Португальский';
 
-      return 'Русский';
+      return 'Другой язык / Не указан';
     }
 
-    // Декодирование служебных кодов
-    function cleanVal(str, fallbackText = '') {
-      if (!str) return fallbackText;
-      const val = String(str).trim();
+    // Очистка названий стран
+    function cleanCountry(raw) {
+      if (!raw) return 'Другая страна / Не указана';
+      const val = String(raw).trim();
       const upper = val.toUpperCase();
-      
-      if (['NR', 'N/R', 'N/A', 'NA', 'NAN', 'UNDEFINED', 'NULL', 'NONE', 'NOT REPORTED', 'NOT RECOGNIZED'].includes(upper)) {
-        return fallbackText || 'Страна не определена';
+      if (['NR', 'N/R', 'N/A', 'NA', 'NAN', 'UNDEFINED', 'NULL', 'NONE', 'NOT REPORTED', 'NOT RECOGNIZED', 'OTHER'].includes(upper)) {
+        return 'Другая страна / Не указана';
       }
-      if (['NE', 'N/E', 'NOT EVALUATED', 'NOT SPECIFIED', 'NOT EXAMINED'].includes(upper)) {
-        return fallbackText || 'Метод не указан';
+      return val;
+    }
+
+    // Очистка наименований методологий
+    function cleanMethodology(raw) {
+      if (!raw) return 'Другой метод / Не указан';
+      const val = String(raw).trim();
+      const upper = val.toUpperCase();
+      if (['NE', 'N/E', 'NR', 'N/R', 'N/A', 'NA', 'NAN', 'UNDEFINED', 'NULL', 'NONE', 'NOT SPECIFIED', 'NOT EVALUATED', 'OTHER'].includes(upper)) {
+        return 'Другой метод / Не указан';
       }
       return val;
     }
@@ -609,13 +620,13 @@
               authors: findVal(item, ['author', 'автор', 'выполнил', 'составитель', 'исследователь', 'авторы'], 'Автор не указан'),
               year: findVal(item, ['year', 'год', 'date', 'дата', 'выпуск', 'издание'], ''),
               category: olympicCategory,
-              methodology: cleanVal(methRaw, 'Метод не указан'),
+              methodology: cleanMethodology(methRaw),
               docType: translateDocType(docTypeRaw),
-              country: cleanVal(countryRaw, 'Страна не определена'),
+              country: cleanCountry(countryRaw),
               language: translateLanguage(langRaw),
               source: findVal(item, ['source', 'источник', 'журнал', 'издание', 'publisher'], 'Olympic Research Hub'),
-              relevance: cleanVal(relRaw, 'Высокая'),
-              verification: cleanVal(verRaw, 'Верифицировано'),
+              relevance: findVal(relRaw, 'Высокая'),
+              verification: findVal(verRaw, 'Верифицировано'),
               summary: rawSummary || 'Описание отсутствует.',
               url: findVal(item, ['url', 'doi', 'link', 'ссылка', 'источник_url'], '#')
             };
@@ -656,8 +667,16 @@
 
       const uniqueItems = [...new Set(items)]
         .map(i => (i || '').trim())
-        .filter(i => i && i !== 'Страна не определена' && i !== 'Не указан' && i !== 'Метод не указан' && i !== 'Не определено')
-        .sort();
+        .filter(Boolean);
+
+      // Сортируем по алфавиту, размещая варианты с "Другое / Другой / Другая" в самом конце списка
+      uniqueItems.sort((a, b) => {
+        const isOtherA = a.startsWith('Друг');
+        const isOtherB = b.startsWith('Друг');
+        if (isOtherA && !isOtherB) return 1;
+        if (!isOtherA && isOtherB) return -1;
+        return a.localeCompare(b, 'ru');
+      });
 
       uniqueItems.forEach(item => {
         const opt = document.createElement('option');
@@ -817,7 +836,7 @@
           labels: Object.keys(catCounts),
           datasets: [{
             data: Object.values(catCounts),
-            backgroundColor: ['#2563eb', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#f97316', '#06b6d4', '#64748b']
+            backgroundColor: ['#2563eb', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#f97316', '#06b6d4', '#64748b', '#94a3b8']
           }]
         },
         options: { responsive: true, maintainAspectRatio: false }
@@ -938,9 +957,9 @@
       document.getElementById('modalAuthors').textContent = `${item.authors} ${item.year ? `(${item.year})` : ''}`;
       
       document.getElementById('modalCategoryMeta').textContent = item.category;
-      document.getElementById('modalMethodology').textContent = item.methodology || 'Метод не указан';
-      document.getElementById('modalDocType').textContent = item.docType || 'Научная статья';
-      document.getElementById('modalCountryLang').textContent = `${item.country || 'Страна не определена'} / ${item.language || 'Не указан'}`;
+      document.getElementById('modalMethodology').textContent = item.methodology || 'Другой метод / Не указан';
+      document.getElementById('modalDocType').textContent = item.docType || 'Другой тип документа';
+      document.getElementById('modalCountryLang').textContent = `${item.country || 'Другая страна / Не указана'} / ${item.language || 'Другой язык / Не указан'}`;
       document.getElementById('modalSource').textContent = item.source || 'Olympic Research Hub';
       document.getElementById('modalRelVer').textContent = `${item.relevance || 'Высокая'} / ${item.verification || 'Верифицировано'}`;
 
