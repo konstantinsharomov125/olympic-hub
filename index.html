@@ -1,335 +1,568 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Olympic Research Hub — Research</title>
-<style>
-:root{
-  --bg:#f4f7fb; --surface:#fff; --surface2:#eef3f8; --text:#142033; --muted:#627089;
-  --line:#dce4ee; --accent:#0f5bd7; --accent2:#0a46a7; --good:#147d4a; --warn:#9a6700; --bad:#b42318;
-  --shadow:0 10px 30px rgba(23,40,66,.08); --radius:16px;
-}
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Segoe UI,Roboto,Arial,sans-serif}
-button,input,select{font:inherit}
-button{cursor:pointer}
-.container{max-width:1440px;margin:0 auto;padding:0 24px}
-.topbar{position:sticky;top:0;z-index:20;background:rgba(244,247,251,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
-.topbar-inner{display:flex;align-items:center;justify-content:space-between;gap:18px;min-height:76px}
-.brand{display:flex;align-items:center;gap:12px}
-.brand-mark{width:42px;height:42px;border-radius:12px;background:linear-gradient(145deg,#0f5bd7,#1b86ff);color:white;display:grid;place-items:center;font-weight:800;box-shadow:var(--shadow)}
-.brand h1{margin:0;font-size:18px;letter-spacing:-.02em}.brand small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
-.nav{display:flex;gap:6px}.nav button{border:0;background:transparent;padding:10px 14px;border-radius:10px;color:var(--muted);font-weight:700}.nav button.active{background:#e6efff;color:var(--accent)}
-.status{font-size:12px;color:var(--muted);white-space:nowrap}.status b{color:var(--good)}
-.hero{padding:30px 0 20px}.hero h2{font-size:34px;margin:0 0 10px;letter-spacing:-.03em}.hero p{margin:0;color:var(--muted);max-width:900px;line-height:1.55}
-.toolbar{margin-top:22px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
-.search-row{display:grid;grid-template-columns:1fr 160px 120px 120px;gap:10px}
-.search{height:46px;border:1px solid var(--line);border-radius:12px;padding:0 14px;outline:none;background:#fff}.search:focus{border-color:#8bb5ff;box-shadow:0 0 0 3px #dbe9ff}
-.btn{border:1px solid var(--line);background:#fff;color:var(--text);border-radius:12px;min-height:42px;padding:0 14px;font-weight:700}.btn:hover{background:var(--surface2)}
-.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn.primary:hover{background:var(--accent2)}
-.btn.ghost{background:transparent}
-.filters{margin-top:14px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.field label{display:block;color:var(--muted);font-size:12px;font-weight:700;margin:0 0 6px}.field select{width:100%;height:42px;border:1px solid var(--line);border-radius:10px;background:#fff;padding:0 10px}
-.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin:18px 0}.kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:15px}.kpi .n{font-size:26px;font-weight:800;letter-spacing:-.02em}.kpi .t{color:var(--muted);font-size:12px;margin-top:4px}
-.meta-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0 18px}.pill{display:inline-flex;align-items:center;min-height:26px;padding:0 9px;border-radius:999px;background:#edf3fb;color:#38506e;font-size:11px;font-weight:800;border:1px solid #e1eaf5}.pill.blue{background:#e6efff;color:#0f5bd7;border-color:#cfe0ff}.pill.green{background:#e9f7ef;color:#147d4a;border-color:#cfeedd}.pill.warn{background:#fff6df;color:#8b6200;border-color:#f2dfaa}.pill.gray{background:#f1f3f6;color:#677386;border-color:#e4e7ec}
-.results-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:6px 0 12px}.results-head .count{font-weight:800}.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 6px 18px rgba(23,40,66,.05);display:flex;flex-direction:column;min-height:250px}.card h3{font-size:18px;line-height:1.35;margin:0 0 10px;letter-spacing:-.015em}.card .authors{font-weight:700;color:#33455f;font-size:13px}.card .summary{margin-top:12px;color:#4c5f78;font-size:13px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:4; line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}.card-footer{margin-top:auto;padding-top:14px;display:flex;justify-content:space-between;align-items:center;gap:10px}.links{display:flex;gap:8px;flex-wrap:wrap}
-.pagination{display:flex;justify-content:center;align-items:center;gap:10px;padding:24px 0 38px}.pagination span{color:var(--muted);font-size:13px;font-weight:700}
-.empty{background:var(--surface);border:1px dashed #cbd6e4;border-radius:16px;padding:40px;text-align:center;color:var(--muted)}
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:18px;margin:18px 0}.panel h3{margin:0 0 14px;font-size:18px}.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.chart-box{border:1px solid var(--line);border-radius:14px;padding:14px;min-height:360px}.chart-box h4{margin:0 0 10px;font-size:14px}.bar{display:grid;grid-template-columns:minmax(120px,1fr) 5fr 54px;gap:8px;align-items:center;margin:9px 0}.bar-label{font-size:12px;color:#485a72;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.track{height:12px;background:#edf1f6;border-radius:999px;overflow:hidden}.fill{height:100%;background:#0f5bd7;border-radius:999px}.bar-value{font-size:12px;font-weight:800;text-align:right}.small-note{color:var(--muted);font-size:11px;line-height:1.45}
-.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px}.data-table{width:100%;border-collapse:collapse;font-size:12px;background:#fff}.data-table th,.data-table td{text-align:left;padding:10px 11px;border-bottom:1px solid var(--line);vertical-align:top}.data-table th{background:#f7f9fc;color:#51627b;position:sticky;top:0}.data-table tr:last-child td{border-bottom:0}
-.modal{position:fixed;inset:0;background:rgba(10,18,32,.52);display:none;z-index:50;padding:30px;overflow:auto}.modal.open{display:block}.modal-card{max-width:980px;margin:0 auto;background:#fff;border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.22);overflow:hidden}.modal-head{padding:20px 22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:18px;align-items:flex-start}.modal-head h3{margin:0;font-size:24px;line-height:1.3}.close{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:#fff;font-size:20px}.modal-body{padding:22px}.section-title{font-size:13px;color:#546781;text-transform:uppercase;letter-spacing:.08em;font-weight:800;margin:22px 0 10px}.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.detail{padding:11px 12px;background:#f7f9fc;border-radius:10px;border:1px solid #e9eef5}.detail b{display:block;font-size:11px;color:#73839a;margin-bottom:4px}.detail span{display:block;white-space:pre-wrap;word-break:break-word;font-size:13px;line-height:1.4}.modal-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
-.footer{padding:28px 0 40px;color:var(--muted);font-size:11px}.hidden{display:none!important}
-@media(max-width:1100px){.search-row{grid-template-columns:1fr 150px 120px}.search-row .last{display:none}.filters{grid-template-columns:repeat(2,minmax(0,1fr))}.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.cards{grid-template-columns:1fr}.chart-grid{grid-template-columns:1fr}}
-@media(max-width:700px){.container{padding:0 14px}.topbar-inner{min-height:68px}.brand h1{font-size:15px}.nav{display:none}.hero h2{font-size:28px}.search-row{grid-template-columns:1fr}.search-row .last{display:block}.filters{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.detail-grid{grid-template-columns:1fr}.modal{padding:10px}.modal-head h3{font-size:19px}}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Olympic Research Hub</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --muted: #4c5f78;
+      --border: #e2e8f0;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --accent-star: #eab308;
+      --radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 24px 16px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Header & Stats */
+    header {
+      margin-bottom: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .title-group h1 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .title-group p {
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    .badge {
+      background: #eff6ff;
+      color: var(--primary);
+      border: 1px solid #bfdbfe;
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    /* Controls & Toolbar */
+    .toolbar {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .search-input, .select-input {
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-input {
+      flex: 1 1 280px;
+    }
+
+    .search-input:focus, .select-input:focus {
+      border-color: var(--primary);
+    }
+
+    .btn {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+    }
+
+    .btn.active {
+      background: #fef9c3;
+      border-color: #fde047;
+      color: #854d0e;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+      border: none;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-sm {
+      padding: 6px 10px;
+      font-size: 12px;
+      border-radius: 6px;
+      background: #f1f5f9;
+      border: 1px solid var(--border);
+      cursor: pointer;
+    }
+
+    .btn-sm:hover {
+      background: #e2e8f0;
+    }
+
+    /* Grid & Cards */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+
+    .category {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 700;
+      color: var(--primary);
+      background: #eff6ff;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+
+    .star-btn {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #cbd5e1;
+      line-height: 1;
+    }
+
+    .star-btn.active {
+      color: var(--accent-star);
+    }
+
+    .card h3 {
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 1.4;
+      margin-bottom: 8px;
+    }
+
+    .authors {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    /* Корректное ограничение строк без предупреждений CSS */
+    .card .summary {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+      line-clamp: 4;
+      overflow: hidden;
+    }
+
+    .card-footer {
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid #f1f5f9;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .citation-group {
+      display: flex;
+      gap: 6px;
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 1000;
+    }
+
+    .modal-backdrop.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      max-width: 650px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 24px;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--muted);
+    }
+
+    .no-results {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 48px 0;
+      color: var(--muted);
+    }
+  </style>
 </head>
 <body>
-<div class="topbar">
-  <div class="container topbar-inner">
-    <div class="brand">
-      <div class="brand-mark">O</div>
-      <div><h1>Olympic Research Hub</h1><small>Structured evidence database</small></div>
-    </div>
-    <div class="nav">
-      <button id="navResearch" class="active" onclick="switchView('research')">RESEARCH</button>
-      <button id="navAnalytics" onclick="switchView('analytics')">ANALYTICS</button>
-    </div>
-    <div class="status" id="status">Загрузка…</div>
-  </div>
-</div>
 
-<main class="container">
-  <section id="researchView">
-    <div class="hero">
-      <h2>Olympic research database</h2>
-      <p>Поиск и анализ структурированного корпуса исследований. Данные загружаются напрямую из опубликованной Google Таблицы — загружать data.csv в GitHub не требуется.</p>
-    </div>
-
-    <div class="toolbar">
-      <div class="search-row">
-        <input id="searchInput" class="search" type="search" placeholder="Ищите по автору, названию, дисциплине, направлениям, методологии, стране, организации, журналу, DOI…">
-        <select id="sortSelect">
-          <option value="year-desc">Год ↓</option>
-          <option value="year-asc">Год ↑</option>
-          <option value="title-asc">Название А–Я</option>
-          <option value="author-asc">Автор А–Я</option>
-          <option value="cited-desc">Цитируемость ↓</option>
-        </select>
-        <button class="btn primary" onclick="applyFilters()">Применить</button>
-        <button class="btn last" onclick="resetFilters()">Сбросить</button>
+  <div class="container">
+    <header>
+      <div class="title-group">
+        <h1>Olympic Research Hub</h1>
+        <p>Платформа библиометрического анализа спортивной науки</p>
       </div>
-      <div class="filters" id="filters"></div>
+      <div class="badge">
+        Исследований в базе: <span id="totalCount">0</span>
+      </div>
+    </header>
+
+    <!-- Панель управления и фильтров -->
+    <div class="toolbar">
+      <input type="text" id="searchInput" class="search-input" placeholder="Поиск по названию, авторам или методам..." />
+      
+      <select id="categorySelect" class="select-input">
+        <option value="">Все категории</option>
+      </select>
+
+      <button id="favFilterBtn" onclick="toggleFavoritesFilter()" class="btn">
+        ⭐ Избранное (<span id="favCount">0</span>)
+      </button>
+
+      <button onclick="exportFilteredToCSV()" class="btn btn-primary">
+        📥 Экспорт в CSV
+      </button>
     </div>
 
-    <div class="kpis" id="kpis"></div>
-    <div class="meta-row" id="filterSummary"></div>
-
-    <div class="results-head">
-      <div class="count" id="resultCount">0 исследований</div>
-      <button class="btn" onclick="downloadFilteredCsv()">Скачать выборку CSV</button>
-    </div>
-    <div id="cards" class="cards"></div>
-    <div id="empty" class="empty hidden">По заданным условиям ничего не найдено.</div>
-    <div class="pagination" id="pagination"></div>
-  </section>
-
-  <section id="analyticsView" class="hidden">
-    <div class="hero">
-      <h2>Analytics</h2>
-      <p>Все показатели ниже рассчитываются непосредственно из текущего корпуса и выбранных фильтров. Никакие числа не зашиты вручную.</p>
-    </div>
-    <div class="kpis" id="analyticsKpis"></div>
-    <div class="chart-grid">
-      <div class="chart-box"><h4>Основные направления</h4><div id="chartDirections"></div></div>
-      <div class="chart-box"><h4>Годы публикации</h4><div id="chartYears"></div></div>
-      <div class="chart-box"><h4>Типы документов</h4><div id="chartTypes"></div></div>
-      <div class="chart-box"><h4>Методология: определена / NE</h4><div id="chartMethods"></div><div class="small-note">NE = методология не определена в текущей записи.</div></div>
-    </div>
-    <div class="panel"><h3>Топ стран</h3><div id="countryTable"></div></div>
-  </section>
-
-  <div class="footer">Olympic Research Hub · research database interface · v2.0</div>
-</main>
-
-<div id="modal" class="modal" onclick="modalBackdrop(event)">
-  <div class="modal-card">
-    <div class="modal-head"><div><h3 id="modalTitle"></h3><div id="modalMeta" class="meta-row" style="margin-bottom:0"></div></div><button class="close" onclick="closeModal()">×</button></div>
-    <div class="modal-body"><div id="modalContent"></div></div>
+    <!-- Сетка карточек -->
+    <div id="cardsGrid" class="cards-grid"></div>
   </div>
-</div>
 
-<script>
-const DATA_REMOTE = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSxNFzNuMUtkeLmD7i8VVSA8vLYqtRE4WrIeqS_BM3UmMBSwz93mEs_EXav9F5LAw/pub?gid=1083555527&single=true&output=csv';
-const DATA_JSON = './generated/web_data.json';
-const PAGE_SIZE = 50;
+  <!-- Модальное окно просмотра -->
+  <div id="modal" class="modal-backdrop" onclick="closeModalOnBackdrop(event)">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span id="modalCategory" class="category"></span>
+        <button class="close-btn" onclick="closeModal()">&times;</button>
+      </div>
+      <h2 id="modalTitle" style="font-size: 20px; margin-bottom: 8px;"></h2>
+      <p id="modalAuthors" class="authors" style="font-size: 14px; margin-bottom: 16px;"></p>
+      <hr style="border: 0; border-top: 1px solid var(--border); margin-bottom: 16px;" />
+      <div id="modalBody" style="font-size: 14px; line-height: 1.6; color: var(--text);"></div>
+      <div style="margin-top: 24px; display: flex; gap: 10px; justify-content: flex-end;">
+        <button onclick="copyCitationFromModal('gost')" class="btn">Цитата ГОСТ</button>
+        <button onclick="copyCitationFromModal('apa')" class="btn">Цитата APA</button>
+        <a id="modalLink" href="#" target="_blank" class="btn btn-primary" style="text-decoration: none;">Открыть источник ↗</a>
+      </div>
+    </div>
+  </div>
 
-const FIELDS = {
-  id:'ID', author:'Автор', year:'Год', country:'Страна', org:'Университет / организация',
-  docType:'Тип документа', level:'Уровень', title:'Название (оригинал)', language:'Язык',
-  discipline:'Научная дисциплина', primary:'Основное направление', secondary:'Вторичное направление',
-  methodology:'Методология', doi:'DOI', url:'URL', source:'Источник', verification:'Статус верификации',
-  relevance:'Уровень релевантности', inclusion:'Причина включения', container:'Контейнер (журнал/издательство)',
-  cited:'Цитируемость', note:'Примечание'
-};
+  <script>
+    let allData = [];
+    let filteredData = [];
+    let favorites = JSON.parse(localStorage.getItem('olympic_favs') || '[]');
+    let showOnlyFavorites = false;
+    let activeModalItem = null;
 
-const state = { all:[], filtered:[], page:1, source:'', filters:{} };
+    // Загрузка данных при старте
+    document.addEventListener('DOMContentLoaded', () => {
+      fetch('generated/web_data.json')
+        .then(res => res.json())
+        .then(data => {
+          allData = data.map((item, index) => ({
+            id: String(item.id || index + 1),
+            title: item.title || item.Title || 'Без названия',
+            authors: item.authors || item.Authors || item.author || 'Автор не указан',
+            year: item.year || item.Year || '',
+            category: item.category || item.Category || 'Общие исследования',
+            summary: item.summary || item.Summary || item.abstract || item.Abstract || 'Описание отсутствует.',
+            url: item.url || item.doi || item.link || '#'
+          }));
+          
+          initCategories();
+          applyFilters();
+          updateFavCounter();
+        })
+        .catch(err => {
+          console.error('Ошибка загрузки данных:', err);
+          document.getElementById('cardsGrid').innerHTML = '<div class="no-results">Ошибка загрузки файла web_data.json</div>';
+        });
 
-function clean(v){ return String(v ?? '').replace(/\uFEFF/g,'').trim(); }
-function norm(v){ return clean(v).toLowerCase().replace(/ё/g,'е'); }
-function unique(arr){ return [...new Set(arr.filter(x=>x && x!=='NR' && x!=='NE'))].sort((a,b)=>a.localeCompare(b,'ru')); }
-function esc(s){ return clean(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
-function csvCell(s){ const x=String(s??''); return /[",\n\r]/.test(x) ? '"'+x.replace(/"/g,'""')+'"' : x; }
+      document.getElementById('searchInput').addEventListener('input', applyFilters);
+      document.getElementById('categorySelect').addEventListener('change', applyFilters);
+    });
 
-function parseCSV(text){
-  const rows=[]; let row=[], cell='', quoted=false;
-  for(let i=0;i<text.length;i++){
-    const ch=text[i];
-    if(quoted){
-      if(ch==='"'){ if(text[i+1]==='"'){cell+='"';i++;} else quoted=false; }
-      else cell+=ch;
-    } else {
-      if(ch==='"') quoted=true;
-      else if(ch===','){ row.push(cell); cell=''; }
-      else if(ch==='\n'){ row.push(cell); rows.push(row); row=[]; cell=''; }
-      else if(ch==='\r'){}
-      else cell+=ch;
+    // Инициализация уникальных категорий в выпадающем списке
+    function initCategories() {
+      const categories = [...new Set(allData.map(i => i.category))].filter(Boolean).sort();
+      const select = document.getElementById('categorySelect');
+      categories.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat;
+        opt.textContent = cat;
+        select.appendChild(opt);
+      });
     }
-  }
-  row.push(cell); if(row.length>1 || row[0]!=='' ) rows.push(row);
-  if(!rows.length) return [];
-  const headers=rows[0].map(clean);
-  return rows.slice(1).filter(r=>r.some(x=>clean(x)!=='')).map(r=>{const o={}; headers.forEach((h,i)=>o[h]=clean(r[i]??'')); return o;});
-}
 
-async function fetchText(url){ const r=await fetch(url,{cache:'no-store'}); if(!r.ok) throw new Error('HTTP '+r.status); return await r.text(); }
-async function fetchJson(url){ const r=await fetch(url,{cache:'no-store'}); if(!r.ok) throw new Error('HTTP '+r.status); return await r.json(); }
-function fromWebJson(payload){
-  const rows=Array.isArray(payload) ? payload : (Array.isArray(payload.data) ? payload.data : []);
-  return rows.map(x=>({
-    'ID':clean(x.study_id), 'Автор':clean(x.authors), 'Год':clean(x.year_numeric || x.year),
-    'Страна':clean(x.country), 'Университет / организация':clean(x.institution),
-    'Тип документа':clean(x.document_type), 'Уровень':clean(x.academic_level),
-    'Название (оригинал)':clean(x.title_original), 'Язык':clean(x.language),
-    'Научная дисциплина':clean(x.discipline), 'Основное направление':clean(x.primary_topic),
-    'Вторичное направление':clean(x.secondary_topic), 'Методология':clean(x.methodology),
-    'DOI':clean(x.doi), 'URL':clean(x.url), 'Источник':clean(x.source),
-    'Статус верификации':clean(x.verification_status), 'Уровень релевантности':clean(x.relevance),
-    'Причина включения':clean(x.inclusion_reason), 'Контейнер (журнал/издательство)':clean(x.container),
-    'Цитируемость':clean(x.citation_count), 'Примечание':clean(x.notes)
-  }));
-}
-async function loadData(){
-  try{
-    const payload=await fetchJson(DATA_JSON);
-    const rows=fromWebJson(payload);
-    if(!rows.length) throw new Error('web_data.json пустой');
-    state.source='GitHub generated/web_data.json';
-    state.all=rows;
-  }catch(jsonErr){
-    const txt=await fetchText(DATA_REMOTE);
-    state.source='Google Sheets CSV (fallback)';
-    state.all=parseCSV(txt);
-  }
-  if(!state.all.length) throw new Error('Источник данных пустой или не распознан');
-  document.getElementById('status').innerHTML='Источник: <b>'+esc(state.source)+'</b> · '+state.all.length.toLocaleString('ru-RU')+' записей';
-  buildFilters(); applyFilters();
-}
+    // Фильтрация
+    function applyFilters() {
+      const query = document.getElementById('searchInput').value.toLowerCase().trim();
+      const selectedCat = document.getElementById('categorySelect').value;
 
-function valueOptions(field){ return unique(state.all.map(r=>clean(r[field])).flatMap(v=>v.split(';').map(x=>clean(x)))); }
-function addSelect(id,label,field){
-  const wrap=document.createElement('div'); wrap.className='field';
-  wrap.innerHTML='<label>'+esc(label)+'</label><select id="'+id+'"><option value="">Все</option></select>';
-  const sel=wrap.querySelector('select'); valueOptions(field).forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;sel.appendChild(o)});
-  sel.addEventListener('change',()=>{ state.page=1; applyFilters(); });
-  document.getElementById('filters').appendChild(wrap);
-}
-function buildFilters(){
-  const f=document.getElementById('filters'); f.innerHTML='';
-  addSelect('fPrimary','Основное направление',FIELDS.primary);
-  addSelect('fSecondary','Вторичное направление',FIELDS.secondary);
-  addSelect('fDiscipline','Научная дисциплина',FIELDS.discipline);
-  addSelect('fMethod','Методология',FIELDS.methodology);
-  addSelect('fDoc','Тип документа',FIELDS.docType);
-  addSelect('fCountry','Страна',FIELDS.country);
-  addSelect('fLanguage','Язык',FIELDS.language);
-  addSelect('fSource','Источник',FIELDS.source);
-  addSelect('fRelevance','Релевантность',FIELDS.relevance);
-  addSelect('fVerification','Верификация',FIELDS.verification);
-  const ys=unique(state.all.map(r=>clean(r[FIELDS.year])).filter(x=>/^\d{4}$/.test(x))).sort((a,b)=>+a-+b);
-  const yr=document.createElement('div'); yr.className='field'; yr.innerHTML='<label>Год от</label><select id="fYearFrom"><option value="">Любой</option></select>'; const ysel=yr.querySelector('select'); ys.forEach(y=>{const o=document.createElement('option');o.value=y;o.textContent=y;ysel.appendChild(o)}); f.appendChild(yr);
-  const yr2=document.createElement('div'); yr2.className='field'; yr2.innerHTML='<label>Год до</label><select id="fYearTo"><option value="">Любой</option></select>'; const y2=yr2.querySelector('select'); ys.forEach(y=>{const o=document.createElement('option');o.value=y;o.textContent=y;y2.appendChild(o)}); f.appendChild(yr2);
-  ["fYearFrom","fYearTo"].forEach(id=>document.getElementById(id).addEventListener('change',()=>{state.page=1;applyFilters();}));
-}
-function getSelect(id){ return clean(document.getElementById(id)?.value); }
-function fieldHas(row,key,needle){
-  const n=norm(needle); return clean(row[key]).split(';').some(v=>norm(v)===n) || norm(row[key])===n;
-}
-function searchable(row){
-  return Object.values(FIELDS).map(k=>clean(row[k])).join(' · ').toLowerCase();
-}
-function matches(row){
-  const q=norm(document.getElementById('searchInput').value);
-  if(q && !norm(searchable(row)).includes(q)) return false;
-  const checks=[['fPrimary',FIELDS.primary],['fSecondary',FIELDS.secondary],['fDiscipline',FIELDS.discipline],['fMethod',FIELDS.methodology],['fDoc',FIELDS.docType],['fCountry',FIELDS.country],['fLanguage',FIELDS.language],['fSource',FIELDS.source],['fRelevance',FIELDS.relevance],['fVerification',FIELDS.verification]];
-  for(const [id,key] of checks){const val=getSelect(id); if(val && !fieldHas(row,key,val)) return false;}
-  const from=getSelect('fYearFrom'), to=getSelect('fYearTo'), y=parseInt(row[FIELDS.year],10);
-  if(from && (!Number.isFinite(y) || y<+from)) return false;
-  if(to && (!Number.isFinite(y) || y>+to)) return false;
-  return true;
-}
-function sortRows(rows){
-  const s=document.getElementById('sortSelect').value;
-  return [...rows].sort((a,b)=>{
-    if(s==='year-desc'||s==='year-asc'){ const da=parseInt(a[FIELDS.year])||-Infinity, db=parseInt(b[FIELDS.year])||-Infinity; return s==='year-desc'?db-da:da-db; }
-    if(s==='title-asc') return clean(a[FIELDS.title]).localeCompare(clean(b[FIELDS.title]),'ru');
-    if(s==='author-asc') return clean(a[FIELDS.author]).localeCompare(clean(b[FIELDS.author]),'ru');
-    if(s==='cited-desc') return (parseInt(b[FIELDS.cited])||0)-(parseInt(a[FIELDS.cited])||0);
-    return 0;
-  });
-}
-function applyFilters(){
-  state.filtered=sortRows(state.all.filter(matches)); state.page=1; renderAll();
-}
-function resetFilters(){
-  document.getElementById('searchInput').value='';
-  ['fPrimary','fSecondary','fDiscipline','fMethod','fDoc','fCountry','fLanguage','fSource','fRelevance','fVerification','fYearFrom','fYearTo'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
-  document.getElementById('sortSelect').value='year-desc'; state.page=1; applyFilters();
-}
-function plural(n,one='исследование',few='исследования',many='исследований'){const m=n%100;if(m>=11&&m<=14)return many;switch(n%10){case 1:return one;case 2:case 3:case 4:return few;default:return many;}}
-function countMap(rows,key,multi=false){const m=new Map(); rows.forEach(r=>{let vs=[clean(r[key])||'NR'];if(multi)vs=vs.flatMap(x=>x.split(';').map(clean)).filter(Boolean);vs.forEach(v=>m.set(v,(m.get(v)||0)+1));});return [...m.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],'ru'));}
-function renderKpis(){
-  const rows=state.filtered, withDoi=rows.filter(r=>/^10\./.test(clean(r[FIELDS.doi]))).length;
-  const years=unique(rows.map(r=>clean(r[FIELDS.year])).filter(x=>/^\d{4}$/.test(x)));
-  const countries=unique(rows.map(r=>clean(r[FIELDS.country])));
-  const methods=unique(rows.map(r=>clean(r[FIELDS.methodology])));
-  document.getElementById('kpis').innerHTML=[
-    [''+rows.length.toLocaleString('ru-RU'),'в текущей выборке'],
-    [''+countries.length,'стран (без NR)'],
-    [''+years.length,'лет с публикациями'],
-    [''+methods.length,'методологических меток'],
-    [''+withDoi,'записей с DOI']
-  ].map(x=>'<div class="kpi"><div class="n">'+x[0]+'</div><div class="t">'+x[1]+'</div></div>').join('');
-  const pills=[]; const q=clean(document.getElementById('searchInput').value); if(q)pills.push('Поиск: '+q); [['fPrimary','Направление'],['fSecondary','Вторичное'],['fDiscipline','Дисциплина'],['fMethod','Методология'],['fDoc','Тип'],['fCountry','Страна'],['fLanguage','Язык'],['fSource','Источник'],['fRelevance','R'],['fVerification','Верификация']].forEach(([id,l])=>{const v=getSelect(id);if(v)pills.push(l+': '+v)}); const yf=getSelect('fYearFrom'), yt=getSelect('fYearTo');if(yf)pills.push('Год от: '+yf);if(yt)pills.push('Год до: '+yt);
-  document.getElementById('filterSummary').innerHTML=(pills.length?'<span class="pill blue">Активные фильтры: '+pills.length+'</span>':'<span class="pill gray">Фильтры не применены</span>')+pills.slice(0,8).map(x=>'<span class="pill">'+esc(x)+'</span>').join('');
-  document.getElementById('resultCount').textContent=rows.length.toLocaleString('ru-RU')+' '+plural(rows.length);
-}
-function firstPart(s){const x=clean(s);return x?x.split(';').slice(0,3).join('; '):'—'}
-function cardHtml(r){
-  const relevance=clean(r[FIELDS.relevance]); const method=firstPart(r[FIELDS.methodology]);
-  return '<article class="card">'
-    +'<h3>'+esc(r[FIELDS.title]||'Без названия')+'</h3>'
-    +'<div class="authors">'+esc(r[FIELDS.author]||'Автор не указан')+' · '+esc(r[FIELDS.year]||'год не указан')+'</div>'
-    +'<div class="meta-row">'
-    +'<span class="pill blue">'+esc(r[FIELDS.primary]||'Без направления')+'</span>'
-    +(r[FIELDS.discipline]?'<span class="pill">'+esc(r[FIELDS.discipline])+'</span>':'')
-    +(method!=='—'?'<span class="pill">'+esc(method)+'</span>':'')
-    +(relevance?'<span class="pill '+(relevance==='R1'?'green':'warn')+'">'+esc(relevance)+'</span>':'')
-    +'</div>'
-    +'<div class="summary">'+esc(clean(r[FIELDS.note])||clean(r[FIELDS.inclusion])||'Дополнительное описание в записи отсутствует.')+'</div>'
-    +'<div class="small-note" style="margin-top:10px">'+esc(clean(r[FIELDS.country])||'Страна не указана')+' · '+esc(clean(r[FIELDS.docType])||'тип не указан')+' · '+esc(clean(r[FIELDS.source])||'источник не указан')+'</div>'
-    +'<div class="card-footer"><div class="links"><button class="btn" onclick="openDetails(\''+encodeURIComponent(r[FIELDS.id])+'\')">Подробнее</button>'
-    +(r[FIELDS.url]?'<a class="btn primary" href="'+esc(r[FIELDS.url])+'" target="_blank" rel="noopener">Первоисточник ↗</a>':'')
-    +(r[FIELDS.doi]&&/^10\./.test(clean(r[FIELDS.doi]))?'<a class="btn" href="https://doi.org/'+encodeURIComponent(clean(r[FIELDS.doi]))+'" target="_blank" rel="noopener">DOI ↗</a>':'')
-    +'</div></div></article>';
-}
-function renderCards(){
-  const total=state.filtered.length; const maxPage=Math.max(1,Math.ceil(total/PAGE_SIZE)); if(state.page>maxPage)state.page=maxPage;
-  const start=(state.page-1)*PAGE_SIZE, pageRows=state.filtered.slice(start,start+PAGE_SIZE);
-  const box=document.getElementById('cards'); box.innerHTML=pageRows.map(cardHtml).join(''); document.getElementById('empty').classList.toggle('hidden',total>0);
-  const p=document.getElementById('pagination'); if(!total){p.innerHTML='';return}
-  const parts=[]; if(state.page>1)parts.push('<button class="btn" onclick="gotoPage('+(state.page-1)+')">← Назад</button>'); parts.push('<span>Страница '+state.page+' из '+maxPage+'</span>'); if(state.page<maxPage)parts.push('<button class="btn" onclick="gotoPage('+(state.page+1)+')">Вперёд →</button>'); p.innerHTML=parts.join('');
-}
-function gotoPage(n){state.page=n;renderCards();window.scrollTo({top:350,behavior:'smooth'});}
-function openDetails(encodedId){const id=decodeURIComponent(encodedId); const r=state.all.find(x=>x[FIELDS.id]===id);if(!r)return;document.getElementById('modalTitle').textContent=r[FIELDS.title]||'Без названия';
- const badges=[]; if(r[FIELDS.primary])badges.push('<span class="pill blue">'+esc(r[FIELDS.primary])+'</span>'); if(r[FIELDS.relevance])badges.push('<span class="pill '+(r[FIELDS.relevance]==='R1'?'green':'warn')+'">'+esc(r[FIELDS.relevance])+'</span>'); if(r[FIELDS.year])badges.push('<span class="pill">'+esc(r[FIELDS.year])+'</span>'); document.getElementById('modalMeta').innerHTML=badges.join('');
- const groups=[
-  ['Библиографические данные',[FIELDS.author,FIELDS.year,FIELDS.country,FIELDS.org,FIELDS.docType,FIELDS.level,FIELDS.language,FIELDS.container,FIELDS.cited]],
-  ['Научная классификация',[FIELDS.discipline,FIELDS.primary,FIELDS.secondary,FIELDS.methodology]],
-  ['Проверка и релевантность',[FIELDS.source,FIELDS.verification,FIELDS.relevance,FIELDS.inclusion]],
-  ['Идентификаторы и ссылки',[FIELDS.id,FIELDS.doi,FIELDS.url]],
-  ['Примечания',[FIELDS.note]]
- ];
- let html=''; groups.forEach(([title,keys])=>{html+='<div class="section-title">'+title+'</div><div class="detail-grid">'+keys.map(k=>'<div class="detail"><b>'+esc(k)+'</b><span>'+esc(r[k]||'—')+'</span></div>').join('')+'</div>'});
- html+='<div class="modal-actions">'; if(r[FIELDS.url])html+='<a class="btn primary" href="'+esc(r[FIELDS.url])+'" target="_blank" rel="noopener">Открыть первоисточник ↗</a>'; if(r[FIELDS.doi]&&/^10\./.test(clean(r[FIELDS.doi])))html+='<a class="btn" href="https://doi.org/'+encodeURIComponent(clean(r[FIELDS.doi]))+'" target="_blank" rel="noopener">Открыть DOI ↗</a>'; html+='</div>';
- document.getElementById('modalContent').innerHTML=html; document.getElementById('modal').classList.add('open'); document.body.style.overflow='hidden';}
-function closeModal(){document.getElementById('modal').classList.remove('open');document.body.style.overflow='';}
-function modalBackdrop(e){if(e.target.id==='modal')closeModal();}
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
-function renderAll(){renderKpis();renderCards();renderAnalytics();}
-function bars(containerId, entries, max=10){const box=document.getElementById(containerId);if(!entries.length){box.innerHTML='<div class="small-note">Нет данных</div>';return}const shown=entries.slice(0,max), mx=Math.max(...shown.map(x=>x[1]));box.innerHTML=shown.map(([label,val])=>'<div class="bar"><div class="bar-label" title="'+esc(label)+'">'+esc(label)+'</div><div class="track"><div class="fill" style="width:'+((val/mx)*100).toFixed(1)+'%"></div></div><div class="bar-value">'+val+'</div></div>').join('');}
-function renderAnalytics(){const rows=state.filtered;document.getElementById('analyticsKpis').innerHTML=[[''+rows.length.toLocaleString('ru-RU'),'исследований'],[''+countMap(rows,FIELDS.primary,true).length,'основных направлений'],[''+countMap(rows,FIELDS.docType).length,'типов документов'],[''+countMap(rows,FIELDS.country).length,'географических меток'],[''+rows.filter(r=>norm(r[FIELDS.methodology])==='ne'||!r[FIELDS.methodology]).length.toLocaleString('ru-RU'),'NE-методологий']].map(x=>'<div class="kpi"><div class="n">'+x[0]+'</div><div class="t">'+x[1]+'</div></div>').join('');
- bars('chartDirections',countMap(rows,FIELDS.primary,true),12);
- bars('chartYears',countMap(rows,FIELDS.year).filter(x=>/^\d{4}$/.test(x[0])).sort((a,b)=>+a[0]-+b[0]),15);
- bars('chartTypes',countMap(rows,FIELDS.docType),10);
- const known=rows.filter(r=>norm(r[FIELDS.methodology])!=='ne'&&clean(r[FIELDS.methodology])).length, ne=rows.length-known; bars('chartMethods',[['Определена',known],['NE / не определена',ne]],2);
- const countries=countMap(rows,FIELDS.country,false).slice(0,20); document.getElementById('countryTable').innerHTML='<div class="table-wrap"><table class="data-table"><thead><tr><th>#</th><th>Страна</th><th>Исследования</th><th>%</th></tr></thead><tbody>'+countries.map((x,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(x[0])+'</td><td>'+x[1]+'</td><td>'+((x[1]/Math.max(rows.length,1))*100).toFixed(1)+'%</td></tr>').join('')+'</tbody></table></div>';}
-function switchView(view){document.getElementById('researchView').classList.toggle('hidden',view!=='research');document.getElementById('analyticsView').classList.toggle('hidden',view!=='analytics');document.getElementById('navResearch').classList.toggle('active',view==='research');document.getElementById('navAnalytics').classList.toggle('active',view==='analytics');if(view==='analytics')renderAnalytics();}
-function downloadFilteredCsv(){ if(!state.filtered.length)return; const headers=Object.values(FIELDS); const rows=[headers,...state.filtered.map(r=>Object.values(FIELDS).map(k=>r[k]||''))]; const csv='\uFEFF'+rows.map(r=>r.map(csvCell).join(',')).join('\r\n'); const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}); const url=URL.createObjectURL(blob); const a=document.createElement('a');a.href=url;a.download='olympic_research_filtered.csv';a.click();URL.revokeObjectURL(url); }
+      filteredData = allData.filter(item => {
+        const matchesSearch = !query || 
+          item.title.toLowerCase().includes(query) || 
+          item.authors.toLowerCase().includes(query) ||
+          item.summary.toLowerCase().includes(query);
+          
+        const matchesCategory = !selectedCat || item.category === selectedCat;
+        const matchesFav = !showOnlyFavorites || favorites.includes(item.id);
 
-document.getElementById('searchInput').addEventListener('input',()=>{state.page=1;applyFilters();});
-document.getElementById('sortSelect').addEventListener('change',()=>applyFilters());
-loadData().catch(err=>{document.getElementById('status').innerHTML='<span style="color:var(--bad)">Ошибка загрузки данных</span>';document.getElementById('cards').innerHTML='<div class="empty">Не удалось загрузить CSV.<br><br><b>Проверьте, что файл data.csv лежит рядом с index.html</b> или что опубликованная Google Таблица доступна по ссылке.<br><br>'+esc(err.message)+'</div>';});
-</script>
+        return matchesSearch && matchesCategory && matchesFav;
+      });
+
+      document.getElementById('totalCount').textContent = filteredData.length.toLocaleString('ru-RU');
+      renderCards();
+    }
+
+    // Отрисовка карточек
+    function renderCards() {
+      const container = document.getElementById('cardsGrid');
+      
+      if (!filteredData.length) {
+        container.innerHTML = '<div class="no-results">По вашему запросу ничего не найдено.</div>';
+        return;
+      }
+
+      container.innerHTML = filteredData.map(item => {
+        const isFav = favorites.includes(item.id);
+        return `
+          <div class="card">
+            <div>
+              <div class="card-header">
+                <span class="category">${escapeHtml(item.category)}</span>
+                <button class="star-btn ${isFav ? 'active' : ''}" onclick="toggleFavorite('${item.id}')" title="В избранное">
+                  ${isFav ? '★' : '☆'}
+                </button>
+              </div>
+              <h3 onclick="openModal('${item.id}')" style="cursor: pointer;">${escapeHtml(item.title)}</h3>
+              <p class="authors">${escapeHtml(item.authors)} ${item.year ? `(${item.year})` : ''}</p>
+              <p class="summary">${escapeHtml(item.summary)}</p>
+            </div>
+            
+            <div class="card-footer">
+              <div class="citation-group">
+                <button onclick="copyCitation('${item.id}', 'gost')" class="btn-sm" title="Скопировать ГОСТ">ГОСТ</button>
+                <button onclick="copyCitation('${item.id}', 'apa')" class="btn-sm" title="Скопировать APA">APA</button>
+              </div>
+              <button onclick="openModal('${item.id}')" class="btn-sm" style="background: #eff6ff; color: var(--primary); border-color: #bfdbfe;">
+                Подробнее ↗
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // --- Избранное ---
+    function toggleFavorite(id) {
+      if (favorites.includes(id)) {
+        favorites = favorites.filter(favId => favId !== id);
+      } else {
+        favorites.push(id);
+      }
+      localStorage.setItem('olympic_favs', JSON.stringify(favorites));
+      updateFavCounter();
+      applyFilters();
+    }
+
+    function toggleFavoritesFilter() {
+      showOnlyFavorites = !showOnlyFavorites;
+      const btn = document.getElementById('favFilterBtn');
+      btn.classList.toggle('active', showOnlyFavorites);
+      applyFilters();
+    }
+
+    function updateFavCounter() {
+      document.getElementById('favCount').textContent = favorites.length;
+    }
+
+    // --- Цитирование ---
+    function formatGOST(item) {
+      return `${item.authors} ${item.title} // Olympic Research Hub. — ${item.year || '2026'}.`;
+    }
+
+    function formatAPA(item) {
+      return `${item.authors} ${item.year ? `(${item.year})` : '(n.d.)'}. ${item.title}. Olympic Research Hub.`;
+    }
+
+    function copyCitation(id, format) {
+      const item = allData.find(i => i.id === id);
+      if (!item) return;
+      const text = format === 'gost' ? formatGOST(item) : formatAPA(item);
+      navigator.clipboard.writeText(text).then(() => {
+        alert(`Цитата (${format.toUpperCase()}) скопирована в буфер обмена!`);
+      });
+    }
+
+    function copyCitationFromModal(format) {
+      if (activeModalItem) copyCitation(activeModalItem.id, format);
+    }
+
+    // --- Экспорт в CSV ---
+    function exportFilteredToCSV() {
+      if (!filteredData.length) {
+        alert('Нет данных для экспорта');
+        return;
+      }
+
+      const headers = ['ID', 'Название', 'Авторы', 'Год', 'Категория', 'Ссылка/DOI'];
+      const rows = filteredData.map(item => [
+        `"${item.id}"`,
+        `"${item.title.replace(/"/g, '""')}"`,
+        `"${item.authors.replace(/"/g, '""')}"`,
+        `"${item.year}"`,
+        `"${item.category.replace(/"/g, '""')}"`,
+        `"${item.url}"`
+      ]);
+
+      const csvContent = '\uFEFF' + [headers.join(';'), ...rows.map(r => r.join(';'))].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `olympic_research_export_${new Date().toISOString().slice(0, 10)}.csv`;
+      link.click();
+    }
+
+    // --- Модальное окно ---
+    function openModal(id) {
+      const item = allData.find(i => i.id === id);
+      if (!item) return;
+      
+      activeModalItem = item;
+      document.getElementById('modalCategory').textContent = item.category;
+      document.getElementById('modalTitle').textContent = item.title;
+      document.getElementById('modalAuthors').textContent = `${item.authors} ${item.year ? `(${item.year})` : ''}`;
+      document.getElementById('modalBody').textContent = item.summary;
+      
+      const linkBtn = document.getElementById('modalLink');
+      if (item.url && item.url !== '#') {
+        linkBtn.href = item.url;
+        linkBtn.style.display = 'inline-block';
+      } else {
+        linkBtn.style.display = 'none';
+      }
+
+      document.getElementById('modal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.remove('active');
+      activeModalItem = null;
+    }
+
+    function closeModalOnBackdrop(e) {
+      if (e.target.id === 'modal') closeModal();
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+  </script>
 </body>
 </html>
