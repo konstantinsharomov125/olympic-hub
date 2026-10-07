@@ -68,7 +68,7 @@
 
     .filters-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 12px;
     }
 
@@ -363,7 +363,7 @@
       </div>
     </header>
 
-    <!-- Панель управления -->
+    <!-- Расширенная панель управления -->
     <div class="toolbar">
       <div class="filters-grid">
         <input type="text" id="searchInput" class="search-input" placeholder="Поиск по названию, авторам, методам..." />
@@ -378,6 +378,14 @@
 
         <select id="docTypeSelect" class="select-input">
           <option value="">Все типы документов</option>
+        </select>
+
+        <select id="countrySelect" class="select-input">
+          <option value="">Все страны</option>
+        </select>
+
+        <select id="langSelect" class="select-input">
+          <option value="">Все языки</option>
         </select>
 
         <div class="year-range-group">
@@ -475,25 +483,26 @@
     let categoryChartInstance = null;
     let yearChartInstance = null;
 
+    // Очистка кодов и замена на понятное описание
+    function cleanVal(str, fallbackText = '') {
+      if (!str) return fallbackText;
+      const val = String(str).trim();
+      const upper = val.toUpperCase();
+      
+      if (['NR', 'N/R', 'N/A', 'NA', 'NAN', 'UNDEFINED', 'NULL', 'NONE', 'NOT REPORTED', 'NOT RECOGNIZED'].includes(upper)) {
+        return fallbackText || 'Не определено';
+      }
+      if (['NE', 'N/E', 'NOT EVALUATED', 'NOT SPECIFIED', 'NOT EXAMINED'].includes(upper)) {
+        return fallbackText || 'Не указано';
+      }
+      return val;
+    }
+
     // Умный поиск значений по ключевым словам
     function findVal(item, keywords, fallback = '') {
       if (!item || typeof item !== 'object') return fallback;
       const keys = Object.keys(item);
 
-      // 1. Точное совпадение
-      for (let kw of keywords) {
-        const kwLower = kw.toLowerCase().trim();
-        for (let k of keys) {
-          if (k.toLowerCase().trim() === kwLower) {
-            const v = item[k];
-            if (v !== undefined && v !== null && String(v).trim() !== '' && String(v).trim() !== 'null') {
-              return String(v).trim();
-            }
-          }
-        }
-      }
-
-      // 2. Частичное совпадение
       for (let kw of keywords) {
         const kwLower = kw.toLowerCase().trim();
         for (let k of keys) {
@@ -505,7 +514,6 @@
           }
         }
       }
-
       return fallback;
     }
 
@@ -517,27 +525,34 @@
             ? data 
             : (data.items || data.data || data.records || data.articles || Object.values(data)[0] || []);
 
-          if (rawList.length > 0) {
-            console.log('Ключи объектов в web_data.json:', Object.keys(rawList[0]));
-          }
+          allData = rawList.map((item, index) => {
+            const catRaw = findVal(item, ['discipline', 'дисциплин', 'category', 'категори', 'сфера', 'область', 'subject', 'раздел', 'вид спорта', 'спорт'], 'Общие исследования');
+            const dirRaw = findVal(item, ['direction', 'направлен', 'трек', 'специализац', 'focus', 'профиль', 'область'], '');
+            const methRaw = findVal(item, ['method', 'методолог', 'метод', 'инструмент', 'подход'], '');
+            const docTypeRaw = findVal(item, ['doctype', 'type', 'тип', 'формат', 'вид документа'], '');
+            const countryRaw = findVal(item, ['country', 'страна', 'государство', 'регион'], '');
+            const langRaw = findVal(item, ['lang', 'язык'], '');
+            const relRaw = findVal(item, ['relevan', 'релевант'], '');
+            const verRaw = findVal(item, ['verif', 'верификац', 'статус', 'проверка'], '');
 
-          allData = rawList.map((item, index) => ({
-            id: findVal(item, ['id', 'ид'], String(index + 1)),
-            title: findVal(item, ['title', 'название', 'заглавие', 'наименование', 'article', 'paper', 'тема', 'работа', 'title_ru', 'title_en'], 'Без названия'),
-            authors: findVal(item, ['author', 'автор', 'выполнил', 'составитель', 'исследователь', 'авторы'], 'Автор не указан'),
-            year: findVal(item, ['year', 'год', 'date', 'дата', 'выпуск', 'издание'], ''),
-            category: findVal(item, ['discipline', 'дисциплин', 'category', 'категори', 'сфера', 'область', 'subject', 'раздел', 'вид спорта', 'спорт'], 'Общие исследования'),
-            direction: findVal(item, ['direction', 'направлен', 'трек', 'специализац', 'focus'], ''),
-            methodology: findVal(item, ['method', 'методолог', 'метод', 'инструмент', 'подход'], ''),
-            docType: findVal(item, ['doctype', 'type', 'тип', 'формат', 'вид документа'], ''),
-            country: findVal(item, ['country', 'страна', 'государство', 'регион'], ''),
-            language: findVal(item, ['lang', 'язык'], ''),
-            source: findVal(item, ['source', 'источник', 'журнал', 'издание', 'publisher'], ''),
-            relevance: findVal(item, ['relevan', 'релевант'], ''),
-            verification: findVal(item, ['verif', 'верификац', 'статус', 'проверка'], ''),
-            summary: findVal(item, ['summary', 'abstract', 'аннотац', 'описани', 'реферат', 'содержани', 'текст'], 'Описание отсутствует.'),
-            url: findVal(item, ['url', 'doi', 'link', 'ссылка', 'источник_url'], '#')
-          }));
+            return {
+              id: findVal(item, ['id', 'ид'], String(index + 1)),
+              title: findVal(item, ['title', 'название', 'заглавие', 'наименование', 'article', 'paper', 'тема', 'работа', 'title_ru', 'title_en'], 'Без названия'),
+              authors: findVal(item, ['author', 'автор', 'выполнил', 'составитель', 'исследователь', 'авторы'], 'Автор не указан'),
+              year: findVal(item, ['year', 'год', 'date', 'дата', 'выпуск', 'издание'], ''),
+              category: cleanVal(catRaw, 'Общие исследования'),
+              direction: cleanVal(dirRaw, ''),
+              methodology: cleanVal(methRaw, 'Метод не указан'),
+              docType: cleanVal(docTypeRaw, ''),
+              country: cleanVal(countryRaw, 'Страна не определена'),
+              language: cleanVal(langRaw, 'Не указан'),
+              source: findVal(item, ['source', 'источник', 'журнал', 'издание', 'publisher'], 'Olympic Research Hub'),
+              relevance: cleanVal(relRaw, 'Не определена'),
+              verification: cleanVal(verRaw, 'Не проведена'),
+              summary: findVal(item, ['summary', 'abstract', 'аннотац', 'описани', 'реферат', 'содержани', 'текст'], 'Описание отсутствует.'),
+              url: findVal(item, ['url', 'doi', 'link', 'ссылка', 'источник_url'], '#')
+            };
+          });
 
           initDropdowns();
           applyFilters();
@@ -548,24 +563,36 @@
           document.getElementById('cardsGrid').innerHTML = '<div class="no-results">Ошибка загрузки файла web_data.json</div>';
         });
 
-      document.getElementById('searchInput').addEventListener('input', () => { currentPage = 1; applyFilters(); });
-      document.getElementById('categorySelect').addEventListener('change', () => { currentPage = 1; applyFilters(); });
-      document.getElementById('directionSelect').addEventListener('change', () => { currentPage = 1; applyFilters(); });
-      document.getElementById('docTypeSelect').addEventListener('change', () => { currentPage = 1; applyFilters(); });
-      document.getElementById('yearFrom').addEventListener('input', () => { currentPage = 1; applyFilters(); });
-      document.getElementById('yearTo').addEventListener('input', () => { currentPage = 1; applyFilters(); });
+      // Слушатели фильтров
+      ['searchInput', 'categorySelect', 'directionSelect', 'docTypeSelect', 'countrySelect', 'langSelect', 'yearFrom', 'yearTo'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.addEventListener(el.tagName === 'INPUT' ? 'input' : 'change', () => { currentPage = 1; applyFilters(); });
+        }
+      });
     });
 
     function initDropdowns() {
       populateSelect('categorySelect', allData.map(i => i.category));
       populateSelect('directionSelect', allData.map(i => i.direction));
       populateSelect('docTypeSelect', allData.map(i => i.docType));
+      populateSelect('countrySelect', allData.map(i => i.country));
+      populateSelect('langSelect', allData.map(i => i.language));
     }
 
     function populateSelect(selectId, items) {
-      const uniqueItems = [...new Set(items)].filter(Boolean).sort();
       const select = document.getElementById(selectId);
-      select.innerHTML = select.options[0].outerHTML;
+      if (!select) return;
+
+      const firstOpt = select.options[0];
+      select.innerHTML = '';
+      select.appendChild(firstOpt);
+
+      const uniqueItems = [...new Set(items)]
+        .map(i => (i || '').trim())
+        .filter(i => i && i !== 'Страна не определена' && i !== 'Не указан' && i !== 'Метод не указан' && i !== 'Не определено')
+        .sort();
+
       uniqueItems.forEach(item => {
         const opt = document.createElement('option');
         opt.value = item;
@@ -579,6 +606,8 @@
       const selectedCat = document.getElementById('categorySelect').value;
       const selectedDir = document.getElementById('directionSelect').value;
       const selectedDoc = document.getElementById('docTypeSelect').value;
+      const selectedCountry = document.getElementById('countrySelect').value;
+      const selectedLang = document.getElementById('langSelect').value;
       const yrFrom = parseInt(document.getElementById('yearFrom').value) || 0;
       const yrTo = parseInt(document.getElementById('yearTo').value) || 9999;
 
@@ -592,13 +621,15 @@
         const matchesCat = !selectedCat || item.category === selectedCat;
         const matchesDir = !selectedDir || item.direction === selectedDir;
         const matchesDoc = !selectedDoc || item.docType === selectedDoc;
+        const matchesCountry = !selectedCountry || item.country === selectedCountry;
+        const matchesLang = !selectedLang || item.language === selectedLang;
 
         const itemYr = parseInt(item.year) || 0;
         const matchesYear = (!yrFrom || itemYr >= yrFrom) && (!yrTo || itemYr <= yrTo);
 
         const matchesFav = !showOnlyFavorites || favorites.includes(item.id);
 
-        return matchesSearch && matchesCat && matchesDir && matchesDoc && matchesYear && matchesFav;
+        return matchesSearch && matchesCat && matchesDir && matchesDoc && matchesCountry && matchesLang && matchesYear && matchesFav;
       });
 
       document.getElementById('totalCount').textContent = filteredData.length.toLocaleString('ru-RU');
@@ -612,6 +643,8 @@
       document.getElementById('categorySelect').value = '';
       document.getElementById('directionSelect').value = '';
       document.getElementById('docTypeSelect').value = '';
+      document.getElementById('countrySelect').value = '';
+      document.getElementById('langSelect').value = '';
       document.getElementById('yearFrom').value = '';
       document.getElementById('yearTo').value = '';
       showOnlyFavorites = false;
@@ -808,7 +841,7 @@
         return;
       }
 
-      const headers = ['ID', 'Название', 'Авторы', 'Год', 'Дисциплина', 'Направление', 'Методология', 'Тип документа', 'Ссылка/DOI'];
+      const headers = ['ID', 'Название', 'Авторы', 'Год', 'Дисциплина', 'Направление', 'Методология', 'Тип документа', 'Страна', 'Язык', 'Ссылка/DOI'];
       const rows = filteredData.map(item => [
         `"${item.id}"`,
         `"${item.title.replace(/"/g, '""')}"`,
@@ -818,6 +851,8 @@
         `"${item.direction.replace(/"/g, '""')}"`,
         `"${item.methodology.replace(/"/g, '""')}"`,
         `"${item.docType.replace(/"/g, '""')}"`,
+        `"${item.country.replace(/"/g, '""')}"`,
+        `"${item.language.replace(/"/g, '""')}"`,
         `"${item.url}"`
       ]);
 
@@ -841,11 +876,11 @@
       document.getElementById('modalAuthors').textContent = `${item.authors} ${item.year ? `(${item.year})` : ''}`;
       
       document.getElementById('modalDirection').textContent = item.direction || 'Не указано';
-      document.getElementById('modalMethodology').textContent = item.methodology || 'Не указана';
+      document.getElementById('modalMethodology').textContent = item.methodology || 'Метод не указан';
       document.getElementById('modalDocType').textContent = item.docType || 'Не указан';
-      document.getElementById('modalCountryLang').textContent = `${item.country || 'Н/Д'} / ${item.language || 'Н/Д'}`;
+      document.getElementById('modalCountryLang').textContent = `${item.country || 'Страна не определена'} / ${item.language || 'Не указан'}`;
       document.getElementById('modalSource').textContent = item.source || 'Olympic Research Hub';
-      document.getElementById('modalRelVer').textContent = `${item.relevance || 'Н/Д'} / ${item.verification || 'Н/Д'}`;
+      document.getElementById('modalRelVer').textContent = `${item.relevance || 'Не определена'} / ${item.verification || 'Не проведена'}`;
 
       document.getElementById('modalBody').textContent = item.summary;
       
