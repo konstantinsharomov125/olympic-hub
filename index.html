@@ -68,7 +68,7 @@
 
     .filters-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 12px;
     }
 
@@ -230,7 +230,7 @@
       border-radius: 4px;
     }
 
-    .direction-badge {
+    .doctype-badge {
       font-size: 11px;
       font-weight: 600;
       color: #047857;
@@ -372,12 +372,8 @@
           <option value="">Направление олимпизма (Все)</option>
         </select>
 
-        <select id="directionSelect" class="select-input">
-          <option value="">Все профили / направления</option>
-        </select>
-
         <select id="docTypeSelect" class="select-input">
-          <option value="">Все типы документов</option>
+          <option value="">Тип документа (Все)</option>
         </select>
 
         <select id="countrySelect" class="select-input">
@@ -451,7 +447,7 @@
       <p id="modalAuthors" class="authors"></p>
 
       <div class="modal-meta-grid">
-        <div class="meta-item"><span>Специализированный профиль:</span><p id="modalDirection">-</p></div>
+        <div class="meta-item"><span>Направление олимпизма:</span><p id="modalCategoryMeta">-</p></div>
         <div class="meta-item"><span>Методология:</span><p id="modalMethodology">-</p></div>
         <div class="meta-item"><span>Тип документа:</span><p id="modalDocType">-</p></div>
         <div class="meta-item"><span>Страна / Язык:</span><p id="modalCountryLang">-</p></div>
@@ -515,7 +511,43 @@
       return 'Олимпийское образование и просвещение';
     }
 
-    // Декодирование буквенных кодов
+    // Расшифровка типов документов на русский язык
+    function translateDocType(raw) {
+      if (!raw) return 'Научная статья';
+      const val = String(raw).trim().toLowerCase();
+      if (['nr', 'ne', 'n/a', 'na', 'null', 'undefined', 'not specified'].includes(val)) return 'Научная статья';
+
+      if (val.includes('dissertation') || val.includes('thesis') || val.includes('диссертац') || val.includes('автореферат')) return 'Диссертация';
+      if (val.includes('conference') || val.includes('proceeding') || val.includes('конференц') || val.includes('доклад') || val.includes('материал')) return 'Материалы конференции';
+      if (val.includes('book') || val.includes('monograph') || val.includes('книг') || val.includes('монограф') || val.includes('учебник')) return 'Монография / Книга';
+      if (val.includes('review') || val.includes('обзор')) return 'Обзорная статья';
+      if (val.includes('report') || val.includes('preprint') || val.includes('препринт') || val.includes('отчет')) return 'Научный отчёт / Препринт';
+      if (val.includes('patent') || val.includes('патент')) return 'Патент';
+      if (val.includes('article') || val.includes('journal') || val.includes('статья') || val.includes('публикац')) return 'Научная статья';
+
+      return 'Научная статья';
+    }
+
+    // Расшифровка языков на русский язык
+    function translateLanguage(raw) {
+      if (!raw) return 'Не указан';
+      const val = String(raw).trim().toLowerCase();
+      if (['nr', 'ne', 'n/a', 'na', 'null', 'undefined', 'not specified'].includes(val)) return 'Не указан';
+
+      if (val === 'ru' || val === 'rus' || val.includes('russian') || val.includes('рус')) return 'Русский';
+      if (val === 'en' || val === 'eng' || val.includes('english') || val.includes('англ')) return 'Английский';
+      if (val === 'de' || val === 'ger' || val.includes('german') || val.includes('deutsch') || val.includes('нем')) return 'Немецкий';
+      if (val === 'fr' || val === 'fre' || val.includes('french') || val.includes('франц')) return 'Французский';
+      if (val === 'es' || val === 'spa' || val.includes('spanish') || val.includes('испан')) return 'Испанский';
+      if (val === 'zh' || val === 'chi' || val.includes('chinese') || val.includes('китай')) return 'Китайский';
+      if (val === 'ja' || val === 'jpn' || val.includes('japanese') || val.includes('япон')) return 'Японский';
+      if (val === 'it' || val === 'ita' || val.includes('italian') || val.includes('итал')) return 'Итальянский';
+      if (val === 'pt' || val === 'por' || val.includes('portuguese') || val.includes('португ')) return 'Португальский';
+
+      return 'Русский';
+    }
+
+    // Декодирование служебных кодов
     function cleanVal(str, fallbackText = '') {
       if (!str) return fallbackText;
       const val = String(str).trim();
@@ -530,7 +562,7 @@
       return val;
     }
 
-    // Нечеткий выбор значения по ключам
+    // Нечеткий поиск по ключам
     function findVal(item, keywords, fallback = '') {
       if (!item || typeof item !== 'object') return fallback;
       const keys = Object.keys(item);
@@ -558,13 +590,12 @@
             : (data.items || data.data || data.records || data.articles || Object.values(data)[0] || []);
 
           allData = rawList.map((item, index) => {
-            const rawCat = findVal(item, ['discipline', 'дисциплин', 'category', 'категори', 'сфера', 'область', 'subject', 'раздел'], '');
+            const rawCat = findVal(item, ['discipline', 'дисциплин', 'category', 'категори', 'сфера', 'область', 'subject'], '');
             const rawTitle = findVal(item, ['title', 'название', 'заглавие', 'наименование', 'article', 'paper', 'тема'], 'Без названия');
             const rawSummary = findVal(item, ['summary', 'abstract', 'аннотац', 'описани', 'реферат', 'содержани', 'текст'], '');
 
             const olympicCategory = mapToOlympicCategory(rawCat, rawTitle, rawSummary);
 
-            const dirRaw = findVal(item, ['direction', 'направлен', 'трек', 'специализац', 'focus', 'профиль', 'область'], '');
             const methRaw = findVal(item, ['method', 'методолог', 'метод', 'инструмент', 'подход'], '');
             const docTypeRaw = findVal(item, ['doctype', 'type', 'тип', 'формат', 'вид документа'], '');
             const countryRaw = findVal(item, ['country', 'страна', 'государство', 'регион'], '');
@@ -578,11 +609,10 @@
               authors: findVal(item, ['author', 'автор', 'выполнил', 'составитель', 'исследователь', 'авторы'], 'Автор не указан'),
               year: findVal(item, ['year', 'год', 'date', 'дата', 'выпуск', 'издание'], ''),
               category: olympicCategory,
-              direction: cleanVal(dirRaw, ''),
               methodology: cleanVal(methRaw, 'Метод не указан'),
-              docType: cleanVal(docTypeRaw, 'Научная статья'),
+              docType: translateDocType(docTypeRaw),
               country: cleanVal(countryRaw, 'Страна не определена'),
-              language: cleanVal(langRaw, 'Не указан'),
+              language: translateLanguage(langRaw),
               source: findVal(item, ['source', 'источник', 'журнал', 'издание', 'publisher'], 'Olympic Research Hub'),
               relevance: cleanVal(relRaw, 'Высокая'),
               verification: cleanVal(verRaw, 'Верифицировано'),
@@ -600,8 +630,8 @@
           document.getElementById('cardsGrid').innerHTML = '<div class="no-results">Ошибка загрузки файла web_data.json</div>';
         });
 
-      // Слушатели фильтров
-      ['searchInput', 'categorySelect', 'directionSelect', 'docTypeSelect', 'countrySelect', 'langSelect', 'yearFrom', 'yearTo'].forEach(id => {
+      // Слушатели событий
+      ['searchInput', 'categorySelect', 'docTypeSelect', 'countrySelect', 'langSelect', 'yearFrom', 'yearTo'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
           el.addEventListener(el.tagName === 'INPUT' ? 'input' : 'change', () => { currentPage = 1; applyFilters(); });
@@ -611,7 +641,6 @@
 
     function initDropdowns() {
       populateSelect('categorySelect', allData.map(i => i.category));
-      populateSelect('directionSelect', allData.map(i => i.direction));
       populateSelect('docTypeSelect', allData.map(i => i.docType));
       populateSelect('countrySelect', allData.map(i => i.country));
       populateSelect('langSelect', allData.map(i => i.language));
@@ -641,7 +670,6 @@
     function applyFilters() {
       const query = document.getElementById('searchInput').value.toLowerCase().trim();
       const selectedCat = document.getElementById('categorySelect').value;
-      const selectedDir = document.getElementById('directionSelect').value;
       const selectedDoc = document.getElementById('docTypeSelect').value;
       const selectedCountry = document.getElementById('countrySelect').value;
       const selectedLang = document.getElementById('langSelect').value;
@@ -656,7 +684,6 @@
           item.methodology.toLowerCase().includes(query);
 
         const matchesCat = !selectedCat || item.category === selectedCat;
-        const matchesDir = !selectedDir || item.direction === selectedDir;
         const matchesDoc = !selectedDoc || item.docType === selectedDoc;
         const matchesCountry = !selectedCountry || item.country === selectedCountry;
         const matchesLang = !selectedLang || item.language === selectedLang;
@@ -666,7 +693,7 @@
 
         const matchesFav = !showOnlyFavorites || favorites.includes(item.id);
 
-        return matchesSearch && matchesCat && matchesDir && matchesDoc && matchesCountry && matchesLang && matchesYear && matchesFav;
+        return matchesSearch && matchesCat && matchesDoc && matchesCountry && matchesLang && matchesYear && matchesFav;
       });
 
       document.getElementById('totalCount').textContent = filteredData.length.toLocaleString('ru-RU');
@@ -678,7 +705,6 @@
     function resetFilters() {
       document.getElementById('searchInput').value = '';
       document.getElementById('categorySelect').value = '';
-      document.getElementById('directionSelect').value = '';
       document.getElementById('docTypeSelect').value = '';
       document.getElementById('countrySelect').value = '';
       document.getElementById('langSelect').value = '';
@@ -709,7 +735,7 @@
               <div class="card-header">
                 <div class="badge-group">
                   <span class="category-badge">${escapeHtml(item.category)}</span>
-                  ${item.direction ? `<span class="direction-badge">${escapeHtml(item.direction)}</span>` : ''}
+                  <span class="doctype-badge">${escapeHtml(item.docType)}</span>
                 </div>
                 <button class="star-btn ${isFav ? 'active' : ''}" onclick="toggleFavorite('${item.id}')" title="В избранное">
                   ${isFav ? '★' : '☆'}
@@ -878,14 +904,13 @@
         return;
       }
 
-      const headers = ['ID', 'Название', 'Авторы', 'Год', 'Олимпийское направление', 'Профиль', 'Методология', 'Тип документа', 'Страна', 'Язык', 'Ссылка/DOI'];
+      const headers = ['ID', 'Название', 'Авторы', 'Год', 'Олимпийское направление', 'Методология', 'Тип документа', 'Страна', 'Язык', 'Ссылка/DOI'];
       const rows = filteredData.map(item => [
         `"${item.id}"`,
         `"${item.title.replace(/"/g, '""')}"`,
         `"${item.authors.replace(/"/g, '""')}"`,
         `"${item.year}"`,
         `"${item.category.replace(/"/g, '""')}"`,
-        `"${item.direction.replace(/"/g, '""')}"`,
         `"${item.methodology.replace(/"/g, '""')}"`,
         `"${item.docType.replace(/"/g, '""')}"`,
         `"${item.country.replace(/"/g, '""')}"`,
@@ -912,7 +937,7 @@
       document.getElementById('modalTitle').textContent = item.title;
       document.getElementById('modalAuthors').textContent = `${item.authors} ${item.year ? `(${item.year})` : ''}`;
       
-      document.getElementById('modalDirection').textContent = item.direction || 'Общий профиль';
+      document.getElementById('modalCategoryMeta').textContent = item.category;
       document.getElementById('modalMethodology').textContent = item.methodology || 'Метод не указан';
       document.getElementById('modalDocType').textContent = item.docType || 'Научная статья';
       document.getElementById('modalCountryLang').textContent = `${item.country || 'Страна не определена'} / ${item.language || 'Не указан'}`;
