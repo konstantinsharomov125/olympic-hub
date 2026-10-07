@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Olympic Research Hub</title>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
       --bg: #f8fafc;
@@ -36,7 +38,6 @@
       margin: 0 auto;
     }
 
-    /* Header & Stats */
     header {
       margin-bottom: 24px;
       display: flex;
@@ -68,13 +69,13 @@
       font-weight: 600;
     }
 
-    /* Controls & Toolbar */
+    /* Toolbar */
     .toolbar {
       background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 16px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
@@ -148,7 +149,44 @@
       background: #e2e8f0;
     }
 
-    /* Grid & Cards */
+    /* Dashboard Drawer */
+    .dashboard-panel {
+      display: none;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .dashboard-panel.active {
+      display: block;
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+      margin-top: 16px;
+    }
+
+    .chart-card {
+      background: #fafafa;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .chart-card h4 {
+      font-size: 14px;
+      margin-bottom: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* Cards Grid */
     .cards-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
@@ -216,7 +254,6 @@
       margin-bottom: 8px;
     }
 
-    /* Корректное ограничение строк без предупреждений CSS */
     .card .summary {
       margin-top: 12px;
       color: var(--muted);
@@ -307,13 +344,17 @@
       </div>
     </header>
 
-    <!-- Панель управления и фильтров -->
+    <!-- Панель управления -->
     <div class="toolbar">
       <input type="text" id="searchInput" class="search-input" placeholder="Поиск по названию, авторам или методам..." />
       
       <select id="categorySelect" class="select-input">
         <option value="">Все категории</option>
       </select>
+
+      <button id="dashboardToggleBtn" onclick="toggleDashboard()" class="btn">
+        📊 Аналитика
+      </button>
 
       <button id="favFilterBtn" onclick="toggleFavoritesFilter()" class="btn">
         ⭐ Избранное (<span id="favCount">0</span>)
@@ -322,6 +363,23 @@
       <button onclick="exportFilteredToCSV()" class="btn btn-primary">
         📥 Экспорт в CSV
       </button>
+    </div>
+
+    <!-- Интерактивный дашборд аналитики -->
+    <div id="dashboardPanel" class="dashboard-panel">
+      <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 4px;">Дашборд публикационной активности</h3>
+      <p style="font-size: 13px; color: var(--muted);">Анализ текущей выборки исследований</p>
+      
+      <div class="charts-grid">
+        <div class="chart-card">
+          <h4>Категории исследований</h4>
+          <canvas id="categoryChart" height="220"></canvas>
+        </div>
+        <div class="chart-card">
+          <h4>Динамика публикаций по годам</h4>
+          <canvas id="yearChart" height="220"></canvas>
+        </div>
+      </div>
     </div>
 
     <!-- Сетка карточек -->
@@ -354,7 +412,9 @@
     let showOnlyFavorites = false;
     let activeModalItem = null;
 
-    // Загрузка данных при старте
+    let categoryChartInstance = null;
+    let yearChartInstance = null;
+
     document.addEventListener('DOMContentLoaded', () => {
       fetch('generated/web_data.json')
         .then(res => res.json())
@@ -382,7 +442,6 @@
       document.getElementById('categorySelect').addEventListener('change', applyFilters);
     });
 
-    // Инициализация уникальных категорий в выпадающем списке
     function initCategories() {
       const categories = [...new Set(allData.map(i => i.category))].filter(Boolean).sort();
       const select = document.getElementById('categorySelect');
@@ -394,7 +453,6 @@
       });
     }
 
-    // Фильтрация
     function applyFilters() {
       const query = document.getElementById('searchInput').value.toLowerCase().trim();
       const selectedCat = document.getElementById('categorySelect').value;
@@ -413,9 +471,9 @@
 
       document.getElementById('totalCount').textContent = filteredData.length.toLocaleString('ru-RU');
       renderCards();
+      updateCharts();
     }
 
-    // Отрисовка карточек
     function renderCards() {
       const container = document.getElementById('cardsGrid');
       
@@ -454,7 +512,73 @@
       }).join('');
     }
 
-    // --- Избранное ---
+    /* --- Аналитика / Chart.js --- */
+    function toggleDashboard() {
+      const panel = document.getElementById('dashboardPanel');
+      const btn = document.getElementById('dashboardToggleBtn');
+      panel.classList.toggle('active');
+      btn.classList.toggle('active');
+      if (panel.classList.contains('active')) {
+        updateCharts();
+      }
+    }
+
+    function updateCharts() {
+      if (!document.getElementById('dashboardPanel').classList.contains('active')) return;
+
+      // 1. Подсчет категорий
+      const catCounts = {};
+      filteredData.forEach(item => {
+        catCounts[item.category] = (catCounts[item.category] || 0) + 1;
+      });
+
+      const catLabels = Object.keys(catCounts);
+      const catValues = Object.values(catCounts);
+
+      if (categoryChartInstance) categoryChartInstance.destroy();
+      categoryChartInstance = new Chart(document.getElementById('categoryChart'), {
+        type: 'doughnut',
+        data: {
+          labels: catLabels,
+          datasets: [{
+            data: catValues,
+            backgroundColor: ['#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe', '#cbd5e1']
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+
+      // 2. Подсчет по годам
+      const yearCounts = {};
+      filteredData.forEach(item => {
+        if (item.year) yearCounts[item.year] = (yearCounts[item.year] || 0) + 1;
+      });
+
+      const sortedYears = Object.keys(yearCounts).sort();
+      const yearValues = sortedYears.map(y => yearCounts[y]);
+
+      if (yearChartInstance) yearChartInstance.destroy();
+      yearChartInstance = new Chart(document.getElementById('yearChart'), {
+        type: 'bar',
+        data: {
+          labels: sortedYears,
+          datasets: [{
+            label: 'Публикации',
+            data: yearValues,
+            backgroundColor: '#2563eb',
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    }
+
+    /* --- Избранное --- */
     function toggleFavorite(id) {
       if (favorites.includes(id)) {
         favorites = favorites.filter(favId => favId !== id);
@@ -477,7 +601,7 @@
       document.getElementById('favCount').textContent = favorites.length;
     }
 
-    // --- Цитирование ---
+    /* --- Цитирование --- */
     function formatGOST(item) {
       return `${item.authors} ${item.title} // Olympic Research Hub. — ${item.year || '2026'}.`;
     }
@@ -499,7 +623,7 @@
       if (activeModalItem) copyCitation(activeModalItem.id, format);
     }
 
-    // --- Экспорт в CSV ---
+    /* --- Экспорт в CSV --- */
     function exportFilteredToCSV() {
       if (!filteredData.length) {
         alert('Нет данных для экспорта');
@@ -525,7 +649,7 @@
       link.click();
     }
 
-    // --- Модальное окно ---
+    /* --- Модальное окно --- */
     function openModal(id) {
       const item = allData.find(i => i.id === id);
       if (!item) return;
