@@ -1,0 +1,11 @@
+﻿metric,value,notes
+records,1639,Rows with at least one non-empty field
+missing_id,0,Should be 0
+duplicate_id,0,Should be 0
+missing_title,0,Should be reviewed
+missing_year,76,Should be reviewed
+doi_present,1639,DOI after normalization
+url_present,1639,URL present
+methodology_ne_or_blank,1296,Do not infer missing methodology
+relevance_r1,674,Current coding
+relevance_r2,965,Current coding
