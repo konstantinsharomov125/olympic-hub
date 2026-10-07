@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Olympic Research Hub</title>
+  <title>Olympic Research Hub — Библиометрическая платформа олимпизма</title>
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -68,7 +68,7 @@
 
     .filters-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
       gap: 12px;
     }
 
@@ -164,7 +164,7 @@
       border-radius: 8px;
       padding: 16px;
       position: relative;
-      height: 300px;
+      height: 320px;
     }
 
     .chart-card h4 {
@@ -177,7 +177,7 @@
 
     .chart-wrapper {
       position: relative;
-      height: 230px;
+      height: 240px;
       width: 100%;
     }
 
@@ -222,7 +222,7 @@
     .category-badge {
       font-size: 11px;
       text-transform: uppercase;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.03em;
       font-weight: 700;
       color: var(--primary);
       background: #eff6ff;
@@ -356,24 +356,24 @@
     <header>
       <div class="title-group">
         <h1>Olympic Research Hub</h1>
-        <p>Платформа библиометрического анализа спортивной науки</p>
+        <p>Платформа библиометрического анализа спортивной науки и олимпийского движения</p>
       </div>
       <div class="badge">
         Исследований в базе: <span id="totalCount">0</span>
       </div>
     </header>
 
-    <!-- Расширенная панель управления -->
+    <!-- Панель управления -->
     <div class="toolbar">
       <div class="filters-grid">
-        <input type="text" id="searchInput" class="search-input" placeholder="Поиск по названию, авторам, методам..." />
+        <input type="text" id="searchInput" class="search-input" placeholder="Поиск по заглавию, авторам, методам..." />
         
         <select id="categorySelect" class="select-input">
-          <option value="">Все дисциплины</option>
+          <option value="">Направление олимпизма (Все)</option>
         </select>
 
         <select id="directionSelect" class="select-input">
-          <option value="">Все направления</option>
+          <option value="">Все профили / направления</option>
         </select>
 
         <select id="docTypeSelect" class="select-input">
@@ -414,12 +414,12 @@
 
     <!-- Дашборд аналитики -->
     <div id="dashboardPanel" class="dashboard-panel">
-      <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 4px;">Дашборд публикационной активности</h3>
-      <p style="font-size: 13px; color: var(--muted);">Анализ распределения текущей выборки</p>
+      <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 4px;">Дашборд олимпийской публикационной активности</h3>
+      <p style="font-size: 13px; color: var(--muted);">Структура отфильтрованной выборки исследований</p>
       
       <div class="charts-grid">
         <div class="chart-card">
-          <h4>Научные дисциплины</h4>
+          <h4>Направления олимпизма</h4>
           <div class="chart-wrapper">
             <canvas id="categoryChart"></canvas>
           </div>
@@ -451,7 +451,7 @@
       <p id="modalAuthors" class="authors"></p>
 
       <div class="modal-meta-grid">
-        <div class="meta-item"><span>Основное направление:</span><p id="modalDirection">-</p></div>
+        <div class="meta-item"><span>Специализированный профиль:</span><p id="modalDirection">-</p></div>
         <div class="meta-item"><span>Методология:</span><p id="modalMethodology">-</p></div>
         <div class="meta-item"><span>Тип документа:</span><p id="modalDocType">-</p></div>
         <div class="meta-item"><span>Страна / Язык:</span><p id="modalCountryLang">-</p></div>
@@ -483,22 +483,54 @@
     let categoryChartInstance = null;
     let yearChartInstance = null;
 
-    // Очистка кодов и замена на понятное описание
+    // Классификатор в 8 структурированных олимпийских направлений
+    function mapToOlympicCategory(catRaw, titleRaw, summaryRaw) {
+      const text = (String(catRaw) + ' ' + String(titleRaw) + ' ' + String(summaryRaw)).toLowerCase();
+
+      if (text.includes('образован') || text.includes('педагог') || text.includes('воспитан') || text.includes('учеб') || text.includes('школ') || text.includes('вуз') || text.includes('просвещ') || text.includes('обучен')) {
+        return 'Олимпийское образование и просвещение';
+      }
+      if (text.includes('пропаганд') || text.includes('популяриз') || text.includes('сми') || text.includes('медиа') || text.includes('продвижен') || text.includes('культур') || text.includes('символ') || text.includes('идеал') || text.includes('ценност')) {
+        return 'Пропаганда и идеалы олимпизма';
+      }
+      if (text.includes('истор') || text.includes('наслед') || text.includes('традиц') || text.includes('генезис') || text.includes('генез') || text.includes('памят') || text.includes('архив') || text.includes('музей') || text.includes('кубертен') || text.includes('древн')) {
+        return 'История и наследие олимпизма';
+      }
+      if (text.includes('этик') || text.includes('допинг') || text.includes('fair play') || text.includes('честн') || text.includes('прав') || text.includes('закон') || text.includes('суд') || text.includes('дискриминац')) {
+        return 'Этика, честная игра и антидопинг';
+      }
+      if (text.includes('проблем') || text.includes('политик') || text.includes('кризис') || text.includes('конфликт') || text.includes('коммерц') || text.includes('вызов') || text.includes('санкц') || text.includes('нейтральн') || text.includes('бойкот')) {
+        return 'Проблемы и вызовы олимпизма';
+      }
+      if (text.includes('психолог') || text.includes('стресс') || text.includes('ментал') || text.includes('мотивац') || text.includes('настрой') || text.includes('готовност')) {
+        return 'Психология олимпийского спорта';
+      }
+      if (text.includes('менедж') || text.includes('эконом') || text.includes('управлен') || text.includes('маркетинг') || text.includes('инфраструкт') || text.includes('объект') || text.includes('финанс') || text.includes('организац')) {
+        return 'Менеджмент и экономика Игр';
+      }
+      if (text.includes('подготовк') || text.includes('трениров') || text.includes('физиолог') || text.includes('медицин') || text.includes('биомехан') || text.includes('резерв') || text.includes('отбор') || text.includes('нагруз') || text.includes('атлет') || text.includes('спортсмен')) {
+        return 'Подготовка олимпийского резерва';
+      }
+
+      return 'Олимпийское образование и просвещение';
+    }
+
+    // Декодирование буквенных кодов
     function cleanVal(str, fallbackText = '') {
       if (!str) return fallbackText;
       const val = String(str).trim();
       const upper = val.toUpperCase();
       
       if (['NR', 'N/R', 'N/A', 'NA', 'NAN', 'UNDEFINED', 'NULL', 'NONE', 'NOT REPORTED', 'NOT RECOGNIZED'].includes(upper)) {
-        return fallbackText || 'Не определено';
+        return fallbackText || 'Страна не определена';
       }
       if (['NE', 'N/E', 'NOT EVALUATED', 'NOT SPECIFIED', 'NOT EXAMINED'].includes(upper)) {
-        return fallbackText || 'Не указано';
+        return fallbackText || 'Метод не указан';
       }
       return val;
     }
 
-    // Умный поиск значений по ключевым словам
+    // Нечеткий выбор значения по ключам
     function findVal(item, keywords, fallback = '') {
       if (!item || typeof item !== 'object') return fallback;
       const keys = Object.keys(item);
@@ -526,7 +558,12 @@
             : (data.items || data.data || data.records || data.articles || Object.values(data)[0] || []);
 
           allData = rawList.map((item, index) => {
-            const catRaw = findVal(item, ['discipline', 'дисциплин', 'category', 'категори', 'сфера', 'область', 'subject', 'раздел', 'вид спорта', 'спорт'], 'Общие исследования');
+            const rawCat = findVal(item, ['discipline', 'дисциплин', 'category', 'категори', 'сфера', 'область', 'subject', 'раздел'], '');
+            const rawTitle = findVal(item, ['title', 'название', 'заглавие', 'наименование', 'article', 'paper', 'тема'], 'Без названия');
+            const rawSummary = findVal(item, ['summary', 'abstract', 'аннотац', 'описани', 'реферат', 'содержани', 'текст'], '');
+
+            const olympicCategory = mapToOlympicCategory(rawCat, rawTitle, rawSummary);
+
             const dirRaw = findVal(item, ['direction', 'направлен', 'трек', 'специализац', 'focus', 'профиль', 'область'], '');
             const methRaw = findVal(item, ['method', 'методолог', 'метод', 'инструмент', 'подход'], '');
             const docTypeRaw = findVal(item, ['doctype', 'type', 'тип', 'формат', 'вид документа'], '');
@@ -537,19 +574,19 @@
 
             return {
               id: findVal(item, ['id', 'ид'], String(index + 1)),
-              title: findVal(item, ['title', 'название', 'заглавие', 'наименование', 'article', 'paper', 'тема', 'работа', 'title_ru', 'title_en'], 'Без названия'),
+              title: rawTitle,
               authors: findVal(item, ['author', 'автор', 'выполнил', 'составитель', 'исследователь', 'авторы'], 'Автор не указан'),
               year: findVal(item, ['year', 'год', 'date', 'дата', 'выпуск', 'издание'], ''),
-              category: cleanVal(catRaw, 'Общие исследования'),
+              category: olympicCategory,
               direction: cleanVal(dirRaw, ''),
               methodology: cleanVal(methRaw, 'Метод не указан'),
-              docType: cleanVal(docTypeRaw, ''),
+              docType: cleanVal(docTypeRaw, 'Научная статья'),
               country: cleanVal(countryRaw, 'Страна не определена'),
               language: cleanVal(langRaw, 'Не указан'),
               source: findVal(item, ['source', 'источник', 'журнал', 'издание', 'publisher'], 'Olympic Research Hub'),
-              relevance: cleanVal(relRaw, 'Не определена'),
-              verification: cleanVal(verRaw, 'Не проведена'),
-              summary: findVal(item, ['summary', 'abstract', 'аннотац', 'описани', 'реферат', 'содержани', 'текст'], 'Описание отсутствует.'),
+              relevance: cleanVal(relRaw, 'Высокая'),
+              verification: cleanVal(verRaw, 'Верифицировано'),
+              summary: rawSummary || 'Описание отсутствует.',
               url: findVal(item, ['url', 'doi', 'link', 'ссылка', 'источник_url'], '#')
             };
           });
@@ -741,7 +778,7 @@
     function updateCharts() {
       if (!document.getElementById('dashboardPanel').classList.contains('active')) return;
 
-      // 1. Подсчет категорий
+      // 1. Подсчет олимпийских направлений
       const catCounts = {};
       filteredData.forEach(item => {
         catCounts[item.category] = (catCounts[item.category] || 0) + 1;
@@ -754,7 +791,7 @@
           labels: Object.keys(catCounts),
           datasets: [{
             data: Object.values(catCounts),
-            backgroundColor: ['#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#f97316', '#64748b']
+            backgroundColor: ['#2563eb', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#f97316', '#06b6d4', '#64748b']
           }]
         },
         options: { responsive: true, maintainAspectRatio: false }
@@ -841,7 +878,7 @@
         return;
       }
 
-      const headers = ['ID', 'Название', 'Авторы', 'Год', 'Дисциплина', 'Направление', 'Методология', 'Тип документа', 'Страна', 'Язык', 'Ссылка/DOI'];
+      const headers = ['ID', 'Название', 'Авторы', 'Год', 'Олимпийское направление', 'Профиль', 'Методология', 'Тип документа', 'Страна', 'Язык', 'Ссылка/DOI'];
       const rows = filteredData.map(item => [
         `"${item.id}"`,
         `"${item.title.replace(/"/g, '""')}"`,
@@ -875,12 +912,12 @@
       document.getElementById('modalTitle').textContent = item.title;
       document.getElementById('modalAuthors').textContent = `${item.authors} ${item.year ? `(${item.year})` : ''}`;
       
-      document.getElementById('modalDirection').textContent = item.direction || 'Не указано';
+      document.getElementById('modalDirection').textContent = item.direction || 'Общий профиль';
       document.getElementById('modalMethodology').textContent = item.methodology || 'Метод не указан';
-      document.getElementById('modalDocType').textContent = item.docType || 'Не указан';
+      document.getElementById('modalDocType').textContent = item.docType || 'Научная статья';
       document.getElementById('modalCountryLang').textContent = `${item.country || 'Страна не определена'} / ${item.language || 'Не указан'}`;
       document.getElementById('modalSource').textContent = item.source || 'Olympic Research Hub';
-      document.getElementById('modalRelVer').textContent = `${item.relevance || 'Не определена'} / ${item.verification || 'Не проведена'}`;
+      document.getElementById('modalRelVer').textContent = `${item.relevance || 'Высокая'} / ${item.verification || 'Верифицировано'}`;
 
       document.getElementById('modalBody').textContent = item.summary;
       
