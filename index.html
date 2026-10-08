@@ -32,7 +32,7 @@
       line-height: 1.5;
     }
 
-    /* 1. Верхний тёмный навбар */
+    /* 1. Верхний навбар */
     .top-navbar {
       background-color: var(--navy-dark);
       color: #ffffff;
@@ -81,7 +81,7 @@
       padding: 24px 20px;
     }
 
-    /* 2. Заголовок сайта с гербом */
+    /* 2. Заголовок сайта */
     .hero-header {
       position: relative;
       background: var(--card-bg);
@@ -471,7 +471,7 @@
 </head>
 <body>
 
-  <!-- 1. Навбар (без лишних вкладок) -->
+  <!-- Навбар -->
   <nav class="top-navbar">
     <div class="brand-logo">
       <svg class="rings-icon" viewBox="0 0 100 50" fill="none" stroke="currentColor" stroke-width="4">
@@ -492,7 +492,7 @@
 
   <div class="main-container">
 
-    <!-- 2. Главный заголовок сайта -->
+    <!-- Заголовок -->
     <header class="hero-header">
       <div class="hero-content">
         <h1>Olympic Research Hub</h1>
@@ -507,7 +507,7 @@
       </svg>
     </header>
 
-    <!-- 3. ДИНАМИЧЕСКИЕ KPI-МЕТРИКИ -->
+    <!-- Динамические KPI-метрики -->
     <section class="stats-row">
       <div class="stat-card">
         <div class="stat-icon">📖</div>
@@ -550,7 +550,7 @@
       </div>
     </section>
 
-    <!-- 4. Двухколоночный макет -->
+    <!-- Двухколоночный макет -->
     <div class="layout-grid">
 
       <!-- Левая колонка -->
@@ -561,8 +561,8 @@
           </div>
 
           <div class="filters-grid-row">
-            <select id="categorySelect" class="select-sm"><option value="">Направление олимпизма (Все)</option></select>
-            <select id="docTypeSelect" class="select-sm"><option value="">Тип документа (Все)</option></select>
+            <select id="categorySelect" class="select-sm"><option value="">Направление</option></select>
+            <select id="docTypeSelect" class="select-sm"><option value="">Тип документа</option></select>
             <select id="countrySelect" class="select-sm"><option value="">Все страны</option></select>
             <select id="langSelect" class="select-sm"><option value="">Все языки</option></select>
           </div>
@@ -693,15 +693,17 @@
       return 'Другие темы олимпизма';
     }
 
+    // Расшифровка типов документов с добавлением категории "Другой тип документа"
     function translateDocType(raw) {
       if (!raw) return 'Другой тип документа';
       const val = String(raw).trim().toLowerCase();
-      if (['nr', 'ne', 'n/a', 'na', 'null', 'none'].includes(val)) return 'Другой тип документа';
+      if (['nr', 'ne', 'n/a', 'na', 'null', 'none', 'other', 'undefined'].includes(val)) return 'Другой тип документа';
       if (val.includes('dissertation') || val.includes('thesis') || val.includes('диссертац')) return 'Диссертация';
       if (val.includes('conference') || val.includes('proceeding') || val.includes('конференц')) return 'Материалы конференции';
       if (val.includes('book') || val.includes('monograph') || val.includes('книг')) return 'Монография / Книга';
       if (val.includes('review') || val.includes('обзор')) return 'Обзорная статья';
-      return 'Научная статья';
+      if (val.includes('article') || val.includes('journal') || val.includes('статья')) return 'Научная статья';
+      return 'Другой тип документа';
     }
 
     function translateLanguage(raw) {
@@ -713,6 +715,28 @@
       if (val === 'de' || val === 'ger' || val.includes('german') || val.includes('нем')) return 'Немецкий';
       if (val === 'fr' || val === 'fre' || val.includes('french') || val.includes('франц')) return 'Французский';
       return 'Другой язык / Не указан';
+    }
+
+    // Декодирование буквенного кода NR в странах
+    function cleanCountry(raw) {
+      if (!raw) return 'Страна не распознана';
+      const val = String(raw).trim();
+      const upper = val.toUpperCase();
+      if (['NR', 'N/R', 'N/A', 'NA', 'NAN', 'UNDEFINED', 'NULL', 'NONE', 'NOT REPORTED', 'NOT RECOGNIZED', 'OTHER'].includes(upper)) {
+        return 'Страна не распознана';
+      }
+      return val;
+    }
+
+    // Декодирование буквенного кода NE в методологии
+    function cleanMethodology(raw) {
+      if (!raw) return 'Методология не указана';
+      const val = String(raw).trim();
+      const upper = val.toUpperCase();
+      if (['NE', 'N/E', 'NR', 'N/R', 'N/A', 'NA', 'NAN', 'UNDEFINED', 'NULL', 'NONE', 'NOT SPECIFIED', 'NOT EVALUATED', 'OTHER'].includes(upper)) {
+        return 'Методология не указана';
+      }
+      return val;
     }
 
     function findVal(item, keywords, fallback = '') {
@@ -732,7 +756,6 @@
       return fallback;
     }
 
-    // Надежная универсальная загрузка (проверяет web_data.json и generated/web_data.json)
     async function fetchDataset() {
       let res;
       try {
@@ -759,9 +782,9 @@
         const rawSummary = findVal(item, ['summary', 'abstract', 'аннотац', 'описани'], '');
 
         const docTypeRaw = findVal(item, ['doctype', 'type', 'тип'], '');
-        const countryRaw = findVal(item, ['country', 'страна'], 'Другая страна / Не указана');
+        const countryRaw = findVal(item, ['country', 'страна'], '');
         const langRaw = findVal(item, ['lang', 'язык'], '');
-        const methRaw = findVal(item, ['method', 'методолог', 'метод'], 'Другой метод / Не указан');
+        const methRaw = findVal(item, ['method', 'методолог', 'метод'], '');
         const sourceRaw = findVal(item, ['source', 'источник', 'журнал', 'издание'], 'Olympic Research Hub');
         const urlRaw = findVal(item, ['url', 'doi', 'link', 'ссылка'], '#');
 
@@ -772,9 +795,9 @@
           year: findVal(item, ['year', 'год', 'date', 'дата'], ''),
           category: mapToOlympicCategory(rawCat, rawTitle, rawSummary),
           docType: translateDocType(docTypeRaw),
-          country: countryRaw,
+          country: cleanCountry(countryRaw),
           language: translateLanguage(langRaw),
-          methodology: methRaw,
+          methodology: cleanMethodology(methRaw),
           source: sourceRaw,
           summary: rawSummary || 'Описание отсутствует.',
           url: urlRaw
