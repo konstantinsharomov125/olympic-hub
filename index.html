@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Olympic Research Hub — Платформа системного анализа олимпизма</title>
+  <title>Олимпийский исследовательский портал — Научно-аналитическая платформа</title>
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -51,9 +51,10 @@
       letter-spacing: -0.01em;
     }
 
-    .rings-icon {
-      height: 24px;
-      opacity: 0.95;
+    .brand-icon {
+      height: 30px;
+      width: auto;
+      flex-shrink: 0;
     }
 
     .top-badge {
@@ -93,7 +94,7 @@
     }
 
     .hero-content h1 {
-      font-size: 32px;
+      font-size: 30px;
       font-weight: 800;
       color: var(--navy-dark);
       letter-spacing: -0.02em;
@@ -102,16 +103,17 @@
     .hero-content p {
       color: var(--text-muted);
       font-size: 15px;
-      margin-top: 6px;
-      max-width: 760px;
+      margin-top: 8px;
+      max-width: 880px;
+      line-height: 1.6;
     }
 
     .hero-watermark {
       position: absolute;
-      right: 20px;
+      right: 24px;
       top: 50%;
       transform: translateY(-50%);
-      height: 110px;
+      height: 120px;
       opacity: 0.08;
       pointer-events: none;
     }
@@ -471,17 +473,24 @@
 </head>
 <body>
 
-  <!-- Навбар -->
+  <!-- Навбар: Концепция "Академическая Триада" -->
   <nav class="top-navbar">
     <div class="brand-logo">
-      <svg class="rings-icon" viewBox="0 0 100 50" fill="none" stroke="currentColor" stroke-width="4">
-        <circle cx="20" cy="20" r="14" stroke="#3b82f6"/>
-        <circle cx="50" cy="20" r="14" stroke="#eab308"/>
-        <circle cx="80" cy="20" r="14" stroke="#ef4444"/>
-        <circle cx="35" cy="32" r="14" stroke="#22c55e"/>
-        <circle cx="65" cy="32" r="14" stroke="#3b82f6"/>
+      <svg class="brand-icon" viewBox="0 0 44 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Связующие линии графа -->
+        <line x1="22" y1="7" x2="10" y2="26" stroke="#2563eb" stroke-width="2.5" opacity="0.8"/>
+        <line x1="22" y1="7" x2="34" y2="26" stroke="#10b981" stroke-width="2.5" opacity="0.8"/>
+        <line x1="10" y1="26" x2="34" y2="26" stroke="#eab308" stroke-width="2.5" opacity="0.8"/>
+        <!-- Внешние круги узлов -->
+        <circle cx="22" cy="7" r="6" fill="#1e293b" stroke="#3b82f6" stroke-width="2.5"/>
+        <circle cx="10" cy="26" r="6" fill="#1e293b" stroke="#10b981" stroke-width="2.5"/>
+        <circle cx="34" cy="26" r="6" fill="#1e293b" stroke="#eab308" stroke-width="2.5"/>
+        <!-- Внутренние ядра -->
+        <circle cx="22" cy="7" r="2.5" fill="#3b82f6"/>
+        <circle cx="10" cy="26" r="2.5" fill="#10b981"/>
+        <circle cx="34" cy="26" r="2.5" fill="#eab308"/>
       </svg>
-      <span>Olympic Research Hub</span>
+      <span>Олимпийский исследовательский портал</span>
     </div>
 
     <div class="top-badge">
@@ -492,18 +501,20 @@
 
   <div class="main-container">
 
-    <!-- Заголовок -->
+    <!-- Заголовок сайта -->
     <header class="hero-header">
       <div class="hero-content">
-        <h1>Olympic Research Hub</h1>
-        <p>Платформа систематического анализа исследований по олимпизму, олимпийскому движению и олимпийскому образованию</p>
+        <h1>Олимпийский исследовательский портал</h1>
+        <p>Научно-аналитическая платформа, которая собирает, систематизирует и анализирует исследования по олимпизму, олимпийскому движению и олимпийскому образованию.</p>
       </div>
-      <svg class="hero-watermark" viewBox="0 0 200 100" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="50" cy="35" r="25"/>
-        <circle cx="100" cy="35" r="25"/>
-        <circle cx="150" cy="35" r="25"/>
-        <circle cx="75" cy="60" r="25"/>
-        <circle cx="125" cy="60" r="25"/>
+      <!-- Фоновый водяной знак: Академическая Триада -->
+      <svg class="hero-watermark" viewBox="0 0 160 130" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="80" y1="25" x2="35" y2="105" stroke="#2563eb" opacity="0.25" stroke-dasharray="4 4"/>
+        <line x1="80" y1="25" x2="125" y2="105" stroke="#10b981" opacity="0.25" stroke-dasharray="4 4"/>
+        <line x1="35" y1="105" x2="125" y2="105" stroke="#eab308" opacity="0.25" stroke-dasharray="4 4"/>
+        <circle cx="80" cy="25" r="20" stroke="#2563eb"/>
+        <circle cx="35" cy="105" r="20" stroke="#10b981"/>
+        <circle cx="125" cy="105" r="20" stroke="#eab308"/>
       </svg>
     </header>
 
@@ -693,7 +704,6 @@
       return 'Другие темы олимпизма';
     }
 
-    // Расшифровка типов документов с добавлением категории "Другой тип документа"
     function translateDocType(raw) {
       if (!raw) return 'Другой тип документа';
       const val = String(raw).trim().toLowerCase();
@@ -717,7 +727,6 @@
       return 'Другой язык / Не указан';
     }
 
-    // Декодирование буквенного кода NR в странах
     function cleanCountry(raw) {
       if (!raw) return 'Страна не распознана';
       const val = String(raw).trim();
@@ -728,7 +737,6 @@
       return val;
     }
 
-    // Декодирование буквенного кода NE в методологии
     function cleanMethodology(raw) {
       if (!raw) return 'Методология не указана';
       const val = String(raw).trim();
@@ -785,7 +793,7 @@
         const countryRaw = findVal(item, ['country', 'страна'], '');
         const langRaw = findVal(item, ['lang', 'язык'], '');
         const methRaw = findVal(item, ['method', 'методолог', 'метод'], '');
-        const sourceRaw = findVal(item, ['source', 'источник', 'журнал', 'издание'], 'Olympic Research Hub');
+        const sourceRaw = findVal(item, ['source', 'источник', 'журнал', 'издание'], 'Олимпийский исследовательский портал');
         const urlRaw = findVal(item, ['url', 'doi', 'link', 'ссылка'], '#');
 
         return {
@@ -921,7 +929,7 @@
 
       const sourcesSet = new Set();
       filteredData.forEach(item => {
-        if (item.source && item.source !== 'Olympic Research Hub' && item.source !== 'Не указан') {
+        if (item.source && item.source !== 'Олимпийский исследовательский портал' && item.source !== 'Не указан') {
           sourcesSet.add(item.source.trim());
         }
       });
@@ -1096,8 +1104,8 @@
       const item = allData.find(i => i.id === id);
       if (!item) return;
       const text = format === 'gost' 
-        ? `${item.authors} ${item.title} // Olympic Research Hub. — ${item.year || '2026'}.`
-        : `${item.authors} (${item.year || 'n.d.'}). ${item.title}. Olympic Research Hub.`;
+        ? `${item.authors} ${item.title} // Олимпийский исследовательский портал. — ${item.year || '2026'}.`
+        : `${item.authors} (${item.year || 'n.d.'}). ${item.title}. Олимпийский исследовательский портал.`;
       navigator.clipboard.writeText(text).then(() => alert(`Цитата скопирована (${format.toUpperCase()})`));
     }
 
