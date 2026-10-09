@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   applyFilters();
 });
 
+// Загрузка базы данных
 async function loadDataset() {
   const paths = ['generated/web_data.json', 'data/web_data.json', 'web_data.json'];
   let loaded = false;
@@ -41,18 +42,88 @@ async function loadDataset() {
         break;
       }
     } catch (e) {
-      // Пробуем следующий путь
+      // Ищем по следующему пути
     }
   }
 
   if (!loaded) {
     console.error("❌ Не удалось загрузить базу данных web_data.json");
     document.getElementById('publications-feed').innerHTML = 
-      `<div class="pub-card" style="grid-column:1/-1;"><p style="color:red;"> Ошибка: Не найден файл web_data.json</p></div>`;
+      `<div class="pub-card" style="grid-column:1/-1;"><p style="color:red;">❌ Ошибка: Не найден файл web_data.json</p></div>`;
   }
 }
 
-// Заполнение выпадающих списков на основе реальных данных из файла
+// Функции нормализации и перевода на чистый русский язык
+function normalizeDocType(raw) {
+  if (!raw) return 'Научная статья';
+  const s = String(raw).toLowerCase();
+  if (s.includes('article') || s.includes('статья') || s.includes('journal')) return 'Научная статья';
+  if (s.includes('conf') || s.includes('материал') || s.includes('доклад') || s.includes('proceedings')) return 'Материалы конференции';
+  if (s.includes('book') || s.includes('monograph') || s.includes('книга') || s.includes('монограф')) return 'Монография';
+  if (s.includes('review') || s.includes('обзор')) return 'Обзорная статья';
+  return 'Научная статья';
+}
+
+function normalizeLanguage(raw) {
+  if (!raw) return 'Русский';
+  const s = String(raw).toLowerCase();
+  if (s.includes('ru') || s.includes('rus') || s.includes('рус')) return 'Русский';
+  if (s.includes('en') || s.includes('eng') || s.includes('анг')) return 'Английский';
+  if (s.includes('de') || s.includes('ger') || s.includes('нем')) return 'Немецкий';
+  if (s.includes('fr') || s.includes('fre') || s.includes('фра')) return 'Французский';
+  if (s.includes('es') || s.includes('spa') || s.includes('исп')) return 'Испанский';
+  if (s.includes('zh') || s.includes('chi') || s.includes('кит')) return 'Китайский';
+  return 'Другой язык';
+}
+
+function normalizeCountry(raw) {
+  if (!raw || raw === 'NR' || raw === 'N/A' || raw === 'null' || raw === 'undefined') return 'Страна не распознана';
+  const s = String(raw).trim();
+  if (s.toLowerCase().includes('russia') || s.toLowerCase().includes('росси')) return 'Россия';
+  if (s.toLowerCase().includes('japan') || s.toLowerCase().includes('япони')) return 'Япония';
+  if (s.toLowerCase().includes('usa') || s.toLowerCase().includes('сша') || s.toLowerCase().includes('america')) return 'США';
+  if (s.toLowerCase().includes('china') || s.toLowerCase().includes('китай')) return 'Китай';
+  if (s.toLowerCase().includes('uk') || s.toLowerCase().includes('england') || s.toLowerCase().includes('великобрит')) return 'Великобритания';
+  if (s.toLowerCase().includes('germany') || s.toLowerCase().includes('герман')) return 'Германия';
+  if (s.toLowerCase().includes('france') || s.toLowerCase().includes('франц')) return 'Франция';
+  if (s.toLowerCase().includes('international') || s.toLowerCase().includes('междунар')) return 'Международные';
+  return s;
+}
+
+function normalizeAuthors(item) {
+  let a = item.authors || item.author || item.authors_str || '';
+  if (Array.isArray(a)) a = a.join(', ');
+  a = String(a).trim();
+  if (!a || a.toLowerCase() === 'nr' || a.toLowerCase() === 'n/a' || a.toLowerCase() === 'unknown' || a.toLowerCase() === 'null') {
+    return 'Автор не указан';
+  }
+  return a;
+}
+
+// Извлечение 4-значного года издания
+function extractYear(item) {
+  let y = item.year || item.publication_year || item.date || item.issued || item.created;
+  if (y) {
+    let match = String(y).match(/\b(18\d{2}|19\d{2}|20\d{2})\b/);
+    if (match) return parseInt(match[1], 10);
+  }
+  let titleMatch = (item.title_original || item.title || item.article || '').match(/\b(18\d{2}|19\d{2}|20\d{2})\b/);
+  if (titleMatch) return parseInt(titleMatch[1], 10);
+
+  return 2020; // fallback год
+}
+
+function getOriginalUrl(item) {
+  const link = item.url || item.link || item.doi || item.source_url || item.pdf_url;
+  if (link && typeof link === 'string' && link.startsWith('http')) return link;
+  if (link && typeof link === 'string' && link.includes('doi.org')) return link.startsWith('http') ? link : 'https://' + link;
+  
+  const title = item.title_original || item.title || item.article || '';
+  if (title) return `https://scholar.google.com/scholar?q=${encodeURIComponent(title)}`;
+  return 'https://scholar.google.com';
+}
+
+// Заполнение выпадающих фильтров на русском языке
 function populateDropdownFilters() {
   const selectCat = document.getElementById('select-category');
   const selectDocType = document.getElementById('select-doctype');
@@ -60,18 +131,15 @@ function populateDropdownFilters() {
   const selectLang = document.getElementById('select-language');
 
   const categories = new Set(STANDARD_CATEGORIES);
-  const docTypes = new Set();
-  const countries = new Set();
-  const languages = new Set();
+  const docTypes = new Set(['Научная статья', 'Монография', 'Материалы конференции', 'Обзорная статья']);
+  const countries = new Set(['Россия', 'Международные', 'США', 'Япония', 'Великобритания', 'Германия', 'Франция', 'Страна не распознана']);
+  const languages = new Set(['Русский', 'Английский', 'Немецкий', 'Французский', 'Испанский', 'Другой язык']);
 
   rawData.forEach(item => {
     if (item.category || item.discipline) categories.add(item.category || item.discipline);
-    if (item.type || item.document_type || item.doc_type) docTypes.add(item.type || item.document_type || item.doc_type);
-    if (item.country || item.country_name) countries.add(item.country || item.country_name);
-    if (item.language || item.lang) languages.add(item.language || item.lang);
   });
 
-  // Направление
+  // Заполнение списков
   categories.forEach(cat => {
     const opt = document.createElement('option');
     opt.value = cat;
@@ -79,8 +147,6 @@ function populateDropdownFilters() {
     selectCat.appendChild(opt);
   });
 
-  // Тип документа
-  if (docTypes.size === 0) ["Научная статья", "Монография", "Материалы конференции"].forEach(t => docTypes.add(t));
   docTypes.forEach(type => {
     const opt = document.createElement('option');
     opt.value = type;
@@ -88,8 +154,6 @@ function populateDropdownFilters() {
     selectDocType.appendChild(opt);
   });
 
-  // Страна
-  if (countries.size === 0) ["Россия", "Международные", "Страна не распознана"].forEach(c => countries.add(c));
   countries.forEach(country => {
     const opt = document.createElement('option');
     opt.value = country;
@@ -97,8 +161,6 @@ function populateDropdownFilters() {
     selectCountry.appendChild(opt);
   });
 
-  // Язык
-  if (languages.size === 0) ["Русский", "Английский", "Не указан"].forEach(l => languages.add(l));
   languages.forEach(lang => {
     const opt = document.createElement('option');
     opt.value = lang;
@@ -116,7 +178,6 @@ function setupEventListeners() {
   document.getElementById('year-from').addEventListener('input', applyFilters);
   document.getElementById('year-to').addEventListener('input', applyFilters);
 
-  // Сброс фильтров
   document.getElementById('btn-reset').addEventListener('click', () => {
     document.getElementById('search-input').value = '';
     document.getElementById('select-category').value = 'ALL';
@@ -131,7 +192,6 @@ function setupEventListeners() {
     applyFilters();
   });
 
-  // Переключение фильтра Избранного
   document.getElementById('btn-fav-filter').addEventListener('click', () => {
     showFavOnly = !showFavOnly;
     document.getElementById('btn-fav-filter').style.backgroundColor = showFavOnly ? 'var(--accent-gold)' : 'var(--bg-main)';
@@ -139,34 +199,15 @@ function setupEventListeners() {
     applyFilters();
   });
 
-  // Экспорт CSV
   document.getElementById('btn-export-csv').addEventListener('click', exportToCSV);
 
-  // Модальное окно
   document.getElementById('modal-close').addEventListener('click', closeModal);
   document.getElementById('modal-view').addEventListener('click', (e) => {
     if (e.target.id === 'modal-view') closeModal();
   });
 }
 
-function getAuthorsStr(item) {
-  if (Array.isArray(item.authors)) return item.authors.join(', ');
-  if (typeof item.authors === 'string' && item.authors.trim()) return item.authors.trim();
-  if (typeof item.author === 'string' && item.author.trim()) return item.author.trim();
-  if (item.authors_str) return item.authors_str;
-  return 'Автор не указан';
-}
-
-function getOriginalUrl(item) {
-  const link = item.url || item.link || item.doi || item.source_url || item.pdf_url;
-  if (link && typeof link === 'string' && link.startsWith('http')) return link;
-  if (link && typeof link === 'string' && link.includes('doi.org')) return link.startsWith('http') ? link : 'https://' + link;
-  
-  const title = item.title_original || item.title || item.article || '';
-  if (title) return `https://scholar.google.com/scholar?q=${encodeURIComponent(title)}`;
-  return 'https://scholar.google.com';
-}
-
+// Применение фильтров и поиска
 function applyFilters() {
   const searchVal = document.getElementById('search-input').value.toLowerCase().trim();
   const catVal = document.getElementById('select-category').value;
@@ -182,22 +223,22 @@ function applyFilters() {
     const cat = item.category || item.discipline || '';
     if (catVal !== 'ALL' && cat !== catVal) return false;
 
-    const docType = item.type || item.document_type || item.doc_type || 'Научная статья';
+    const docType = normalizeDocType(item.type || item.document_type || item.doc_type);
     if (docTypeVal !== 'ALL' && docType !== docTypeVal) return false;
 
-    const country = item.country || item.country_name || 'Страна не распознана';
+    const country = normalizeCountry(item.country || item.country_name);
     if (countryVal !== 'ALL' && country !== countryVal) return false;
 
-    const lang = item.language || item.lang || 'Не указан';
+    const lang = normalizeLanguage(item.language || item.lang);
     if (langVal !== 'ALL' && lang !== langVal) return false;
 
-    const year = parseInt(item.year || item.publication_year || 2020, 10);
+    const year = extractYear(item);
     if (!isNaN(yearFrom) && year < yearFrom) return false;
     if (!isNaN(yearTo) && year > yearTo) return false;
 
     const title = (item.title_original || item.title || item.article || '').toLowerCase();
     const summary = (item.summary || item.abstract || item.description || '').toLowerCase();
-    const authors = getAuthorsStr(item).toLowerCase();
+    const authors = normalizeAuthors(item).toLowerCase();
 
     if (searchVal && !title.includes(searchVal) && !summary.includes(searchVal) && !authors.includes(searchVal)) return false;
 
@@ -212,6 +253,7 @@ function applyFilters() {
   updateCharts(filteredData);
 }
 
+// Отрисовка карточек публикации
 function renderPublicationsGrid(items) {
   const feed = document.getElementById('publications-feed');
 
@@ -227,10 +269,10 @@ function renderPublicationsGrid(items) {
     const title = item.title_original || item.title || item.article || 'Научное исследование без названия';
     const summary = item.summary || item.abstract || item.description || 'Аннотация к работе отсутствует в базе.';
     const category = item.category || item.discipline || 'Олимпизм';
-    const authors = getAuthorsStr(item);
-    const year = item.year || item.publication_year || '2020';
-    const country = item.country || item.country_name || 'Страна не распознана';
-    const docType = item.type || item.document_type || 'Научная статья';
+    const authors = normalizeAuthors(item);
+    const year = extractYear(item);
+    const country = normalizeCountry(item.country || item.country_name);
+    const docType = normalizeDocType(item.type || item.document_type);
     const originalUrl = getOriginalUrl(item);
 
     const realIndex = rawData.indexOf(item);
@@ -284,10 +326,10 @@ function openModalByItemIndex(realIndex) {
   const title = item.title_original || item.title || item.article || 'Без названия';
   const summary = item.summary || item.abstract || item.description || 'Аннотация отсутствует.';
   const category = item.category || item.discipline || 'Олимпизм';
-  const authors = getAuthorsStr(item);
-  const year = item.year || item.publication_year || '—';
-  const docType = item.type || item.document_type || 'Научная статья';
-  const country = item.country || item.country_name || 'Страна не распознана';
+  const authors = normalizeAuthors(item);
+  const year = extractYear(item);
+  const docType = normalizeDocType(item.type || item.document_type);
+  const country = normalizeCountry(item.country || item.country_name);
   const originalUrl = getOriginalUrl(item);
 
   document.getElementById('modal-title').innerText = title;
@@ -302,7 +344,7 @@ function openModalByItemIndex(realIndex) {
   linkElem.href = originalUrl;
 
   document.getElementById('modal-citation').innerText = 
-    `${authors}. ${title} // Olympic Research Hub. — ${year}. — URL: ${originalUrl}`;
+    `${authors}.${title} // Олимпийский исследовательский портал. — ${year}. — URL:${originalUrl}`;
 
   document.getElementById('modal-view').classList.add('active');
 }
@@ -311,10 +353,11 @@ function closeModal() {
   document.getElementById('modal-view').classList.remove('active');
 }
 
-/* ГРАФИКИ CHART.JS */
+/* ОБНОВЛЕНИЕ ДИАГРАММ И ИСПРАВЛЕННЫЙ ГРАФИК ПО ГОДАМ */
 function updateCharts(dataset) {
   if (typeof Chart === 'undefined') return;
 
+  // 1. Круговая диаграмма
   const catCounts = {};
   STANDARD_CATEGORIES.forEach(c => catCounts[c] = 0);
   dataset.forEach(item => {
@@ -349,15 +392,16 @@ function updateCharts(dataset) {
     });
   }
 
+  // 2. Исправленный график временной динамики публикаций
   const yearCounts = {};
   dataset.forEach(item => {
-    const y = parseInt(item.year || item.publication_year || 2020, 10);
-    if (y >= 1896 && y <= 2026) {
+    const y = extractYear(item);
+    if (y && y >= 1896 && y <= 2026) {
       yearCounts[y] = (yearCounts[y] || 0) + 1;
     }
   });
 
-  const sortedYears = Object.keys(yearCounts).sort();
+  const sortedYears = Object.keys(yearCounts).map(Number).sort((a, b) => a - b);
   const lineCtx = document.getElementById('lineChart')?.getContext('2d');
 
   if (lineCtx) {
@@ -371,11 +415,12 @@ function updateCharts(dataset) {
           label: 'Публикации',
           data: sortedYears.map(y => yearCounts[y]),
           borderColor: '#10233F',
-          backgroundColor: 'rgba(41, 73, 107, 0.1)',
+          backgroundColor: 'rgba(41, 73, 107, 0.12)',
           borderWidth: 2,
           fill: true,
           tension: 0.3,
-          pointRadius: 2
+          pointRadius: 2,
+          pointHoverRadius: 5
         }]
       },
       options: {
@@ -383,8 +428,14 @@ function updateCharts(dataset) {
         maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         scales: {
-          x: { grid: { display: false } },
-          y: { grid: { color: '#E4DED2' } }
+          x: { 
+            grid: { display: false },
+            ticks: { font: { size: 10 }, color: '#697586' }
+          },
+          y: { 
+            grid: { color: '#E4DED2' },
+            ticks: { font: { size: 10 }, color: '#697586' }
+          }
         }
       }
     });
@@ -395,10 +446,10 @@ function exportToCSV() {
   let csvContent = "data:text/csv;charset=utf-8,Category,Title,Authors,Year,Country,URL\n";
   filteredData.forEach(item => {
     const cat = (item.category || item.discipline || '').replace(/"/g, '""');
-    const title = (item.title_original || item.title || '').replace(/"/g, '""');
-    const authors = getAuthorsStr(item).replace(/"/g, '""');
-    const year = item.year || item.publication_year || '';
-    const country = (item.country || item.country_name || '').replace(/"/g, '""');
+    const title = (item.title_original || item.title || item.article || '').replace(/"/g, '""');
+    const authors = normalizeAuthors(item).replace(/"/g, '""');
+    const year = extractYear(item);
+    const country = normalizeCountry(item.country || item.country_name).replace(/"/g, '""');
     const url = getOriginalUrl(item);
     csvContent += `"${cat}","${title}","${authors}","${year}","${country}","${url}"\n`;
   });

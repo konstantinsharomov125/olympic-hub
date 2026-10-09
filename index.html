@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Olympic Research Hub</title>
+  <title>Олимпийский исследовательский портал</title>
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
-  <!-- ВЕРХНЯЯ ШАПКА -->
+  <!-- ВЕРХНЯЯ ШАПКА ПОРТАЛА -->
   <header class="site-header">
     <div class="header-container">
       <div class="brand-block">
@@ -19,7 +19,7 @@
           <path d="M12 16H20 M12 22H20 M12 28H18 M28 16H36 M28 22H36 M28 28H34" />
           <path d="M18 8C18 4.68 20.68 2 24 2C27.32 2 30 4.68 30 8" />
         </svg>
-        <span class="brand-title">Olympic Research Hub</span>
+        <span class="brand-title">Олимпийский исследовательский портал</span>
       </div>
 
       <div class="status-badge">
@@ -31,11 +31,11 @@
 
   <div class="portal-wrapper">
 
-    <!-- HERO БЛОК С ОРИГИНАЛЬНЫМ РУССКИМ ТЕКСТОМ -->
+    <!-- HERO БАННЕР -->
     <section class="hero-banner">
       <div class="hero-text">
-        <h1 class="hero-title">Olympic Research Hub</h1>
-        <p class="hero-subtitle">Платформа систематического анализа исследований по олимпизму, олимпийскому движению и олимпийскому образованию</p>
+        <h1 class="hero-title">Олимпийский исследовательский портал</h1>
+        <p class="hero-subtitle">Научно-аналитическая платформа, которая собирает, систематизирует и анализирует исследования по олимпизму, олимпийскому движению и олимпийскому образованию.</p>
       </div>
       <svg class="hero-graphic" width="180" height="100" viewBox="0 0 180 100">
         <circle cx="40" cy="35" r="28" fill="none" stroke-width="2"/>
@@ -102,7 +102,7 @@
     <!-- ОСНОВНОЙ 2-КОЛОНОЧНЫЙ МАКЕТ -->
     <div class="main-layout">
 
-      <!-- ЛЕВАЯ КОЛОНКА (ФИЛЬТРЫ И КАРТОЧКИ) -->
+      <!-- ЛЕВАЯ КОЛОНКА (ФИЛЬТРЫ И ВЫДАЧА) -->
       <div class="feed-column">
         
         <!-- ПАНЕЛЬ ФИЛЬТРАЦИИ -->
@@ -132,13 +132,13 @@
             </select>
           </div>
 
-          <!-- Год от / Год до -->
+          <!-- Поля диапазона годов -->
           <div class="filter-years-row">
             <input type="number" id="year-from" class="input-year" placeholder="Год от" min="1896" max="2026">
             <input type="number" id="year-to" class="input-year" placeholder="Год до" min="1896" max="2026">
           </div>
 
-          <!-- Кнопки сброса, избранного и экспорта -->
+          <!-- Кнопки управления -->
           <div class="filter-actions-row">
             <button class="btn-secondary" id="btn-reset">🔄 Сбросить фильтры</button>
             
@@ -161,15 +161,16 @@
 
         <!-- ЛЕНТА КАРТОЧЕК ПУБЛИКАЦИЙ -->
         <div id="publications-feed" class="cards-grid">
-          <!-- Карточки загружаются динамически -->
+          <!-- Карточки загружаются автоматически -->
         </div>
 
       </div>
 
-      <!-- ПРАВАЯ КОЛОНКА (АНАЛИТИКА И ГРАФИКИ) -->
+      <!-- ПРАВАЯ КОЛОНКА (АНАЛИТИКА И ИСПРАВЛЕННЫЕ ГРАФИКИ) -->
       <aside class="analytics-sidebar-card">
         <h2 class="analytics-main-title">АНАЛИТИКА ВЫБОРКИ</h2>
 
+        <!-- Круговая диаграмма -->
         <div class="chart-block">
           <h3 class="chart-subtitle">Направления олимпизма</h3>
           <div class="canvas-container">
@@ -177,6 +178,7 @@
           </div>
         </div>
 
+        <!-- Исправленный график по годам -->
         <div class="chart-block">
           <h3 class="chart-subtitle">Динамика по годам</h3>
           <div class="canvas-container">
@@ -189,7 +191,7 @@
 
   </div>
 
-  <!-- МОДАЛЬНОЕ ОКНО ПРОСМОТРА И ПРЯМОЙ ССЫЛКИ НА ОРИГИНАЛ -->
+  <!-- МОДАЛЬНОЕ ОКНО ПРОСМОТРА И ПРЯМОЙ ССЫЛКИ -->
   <div class="modal-backdrop" id="modal-view">
     <div class="modal-content">
       <button class="modal-close-btn" id="modal-close">&times;</button>
@@ -197,17 +199,17 @@
       <h2 class="modal-title" id="modal-title">Название научной работы</h2>
       
       <div class="modal-meta-grid">
-        <div><strong>Авторы:</strong> <span id="modal-authors">—</span></div>
+        <div><strong>Авторы:</strong> <span id="modal-authors">Автор не указан</span></div>
         <div><strong>Год:</strong> <span id="modal-year">—</span></div>
-        <div><strong>Тип:</strong> <span id="modal-doctype">—</span></div>
-        <div><strong>Страна:</strong> <span id="modal-country">—</span></div>
+        <div><strong>Тип документа:</strong> <span id="modal-doctype">Научная статья</span></div>
+        <div><strong>Страна:</strong> <span id="modal-country">Страна не распознана</span></div>
       </div>
 
       <div class="modal-abstract-full" id="modal-abstract">
         Полный текст аннотации...
       </div>
 
-      <div class="modal-actions">
+      <div style="margin-top: 1.25rem;">
         <a href="#" id="modal-original-link" target="_blank" class="btn-primary-dark">
           🔗 Открыть оригинал исследования
         </a>
