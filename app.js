@@ -3,6 +3,8 @@ let filteredData = [];
 let favorites = new Set();
 let showFavOnly = false;
 
+let currentViewMode = 'grid'; // 'grid', 'list', 'table'
+
 let donutChartInstance = null;
 let lineChartInstance = null;
 
@@ -16,7 +18,8 @@ const STANDARD_CATEGORIES = [
   "Менеджмент, маркетинг и экономика Игр",
   "Спортивная медицина, физиология и биомеханика",
   "Подготовка олимпийского резерва и тренировка",
-  "Теория и методология олимпийского движения"
+  "Теория и методология олимпийского движения",
+  "Другое"
 ];
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -53,14 +56,16 @@ async function loadDataset() {
   }
 }
 
-// Функции нормализации и перевода на чистый русский язык
+// Нормализация типов документов с расширенными категориями
 function normalizeDocType(raw) {
   if (!raw) return 'Научная статья';
   const s = String(raw).toLowerCase();
-  if (s.includes('article') || s.includes('статья') || s.includes('journal')) return 'Научная статья';
+  if (s.includes('диссертац') || s.includes('dissertation') || s.includes('thesis')) return 'Диссертация';
+  if (s.includes('обзор') || s.includes('review')) return 'Обзорная статья';
+  if (s.includes('учебн') || s.includes('manual') || s.includes('textbook')) return 'Учебное пособие';
+  if (s.includes('book') || s.includes('монограф')) return 'Монография';
   if (s.includes('conf') || s.includes('материал') || s.includes('доклад') || s.includes('proceedings')) return 'Материалы конференции';
-  if (s.includes('book') || s.includes('monograph') || s.includes('книга') || s.includes('монограф')) return 'Монография';
-  if (s.includes('review') || s.includes('обзор')) return 'Обзорная статья';
+  if (s.includes('article') || s.includes('статья') || s.includes('journal')) return 'Научная статья';
   return 'Научная статья';
 }
 
@@ -77,7 +82,9 @@ function normalizeLanguage(raw) {
 }
 
 function normalizeCountry(raw) {
-  if (!raw || raw === 'NR' || raw === 'N/A' || raw === 'null' || raw === 'undefined') return 'Страна не распознана';
+  if (!raw || raw === 'NR' || raw === 'N/A' || raw === 'null' || raw === 'undefined' || raw === 'International' || raw === 'Международные') {
+    return 'Другие страны';
+  }
   const s = String(raw).trim();
   if (s.toLowerCase().includes('russia') || s.toLowerCase().includes('росси')) return 'Россия';
   if (s.toLowerCase().includes('japan') || s.toLowerCase().includes('япони')) return 'Япония';
@@ -86,8 +93,7 @@ function normalizeCountry(raw) {
   if (s.toLowerCase().includes('uk') || s.toLowerCase().includes('england') || s.toLowerCase().includes('великобрит')) return 'Великобритания';
   if (s.toLowerCase().includes('germany') || s.toLowerCase().includes('герман')) return 'Германия';
   if (s.toLowerCase().includes('france') || s.toLowerCase().includes('франц')) return 'Франция';
-  if (s.toLowerCase().includes('international') || s.toLowerCase().includes('междунар')) return 'Международные';
-  return s;
+  return 'Другие страны';
 }
 
 function normalizeAuthors(item) {
@@ -100,7 +106,7 @@ function normalizeAuthors(item) {
   return a;
 }
 
-// Извлечение 4-значного года издания
+// Извлечение чистого года издания
 function extractYear(item) {
   let y = item.year || item.publication_year || item.date || item.issued || item.created;
   if (y) {
@@ -110,7 +116,7 @@ function extractYear(item) {
   let titleMatch = (item.title_original || item.title || item.article || '').match(/\b(18\d{2}|19\d{2}|20\d{2})\b/);
   if (titleMatch) return parseInt(titleMatch[1], 10);
 
-  return 2020; // fallback год
+  return 2020;
 }
 
 function getOriginalUrl(item) {
@@ -123,30 +129,23 @@ function getOriginalUrl(item) {
   return 'https://scholar.google.com';
 }
 
-// Заполнение выпадающих фильтров на русском языке
+// Заполнение обновлённых выпадающих списков
 function populateDropdownFilters() {
   const selectCat = document.getElementById('select-category');
   const selectDocType = document.getElementById('select-doctype');
   const selectCountry = document.getElementById('select-country');
   const selectLang = document.getElementById('select-language');
 
-  const categories = new Set(STANDARD_CATEGORIES);
-  const docTypes = new Set(['Научная статья', 'Монография', 'Материалы конференции', 'Обзорная статья']);
-  const countries = new Set(['Россия', 'Международные', 'США', 'Япония', 'Великобритания', 'Германия', 'Франция', 'Страна не распознана']);
-  const languages = new Set(['Русский', 'Английский', 'Немецкий', 'Французский', 'Испанский', 'Другой язык']);
-
-  rawData.forEach(item => {
-    if (item.category || item.discipline) categories.add(item.category || item.discipline);
-  });
-
-  // Заполнение списков
-  categories.forEach(cat => {
+  selectCat.innerHTML = `<option value="ALL">Все направления</option>`;
+  STANDARD_CATEGORIES.forEach(cat => {
     const opt = document.createElement('option');
     opt.value = cat;
     opt.textContent = cat;
     selectCat.appendChild(opt);
   });
 
+  selectDocType.innerHTML = `<option value="ALL">Все типы документов</option>`;
+  const docTypes = ['Научная статья', 'Обзорная статья', 'Монография', 'Диссертация', 'Учебное пособие', 'Материалы конференции'];
   docTypes.forEach(type => {
     const opt = document.createElement('option');
     opt.value = type;
@@ -154,6 +153,8 @@ function populateDropdownFilters() {
     selectDocType.appendChild(opt);
   });
 
+  selectCountry.innerHTML = `<option value="ALL">Все страны</option>`;
+  const countries = ['Россия', 'США', 'Китай', 'Германия', 'Франция', 'Великобритания', 'Япония', 'Другие страны'];
   countries.forEach(country => {
     const opt = document.createElement('option');
     opt.value = country;
@@ -161,6 +162,8 @@ function populateDropdownFilters() {
     selectCountry.appendChild(opt);
   });
 
+  selectLang.innerHTML = `<option value="ALL">Все языки</option>`;
+  const languages = ['Русский', 'Английский', 'Немецкий', 'Французский', 'Испанский', 'Другой язык'];
   languages.forEach(lang => {
     const opt = document.createElement('option');
     opt.value = lang;
@@ -207,7 +210,15 @@ function setupEventListeners() {
   });
 }
 
-// Применение фильтров и поиска
+// Переключение между вариантами вида: Grid, List, Table
+function changeViewMode(mode) {
+  currentViewMode = mode;
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(`btn-view-${mode}`)?.classList.add('active');
+  renderCurrentView();
+}
+
+// Применение фильтрации
 function applyFilters() {
   const searchVal = document.getElementById('search-input').value.toLowerCase().trim();
   const catVal = document.getElementById('select-category').value;
@@ -220,7 +231,7 @@ function applyFilters() {
   filteredData = rawData.filter((item, idx) => {
     if (showFavOnly && !favorites.has(idx)) return false;
 
-    const cat = item.category || item.discipline || '';
+    const cat = item.category || item.discipline || 'Другое';
     if (catVal !== 'ALL' && cat !== catVal) return false;
 
     const docType = normalizeDocType(item.type || item.document_type || item.doc_type);
@@ -249,64 +260,117 @@ function applyFilters() {
   document.getElementById('header-stat-count').innerText = rawData.length.toLocaleString('ru-RU');
   document.getElementById('metric-total-val').innerText = rawData.length.toLocaleString('ru-RU');
 
-  renderPublicationsGrid(filteredData.slice(0, 60));
+  renderCurrentView();
   updateCharts(filteredData);
 }
 
-// Отрисовка карточек публикации
-function renderPublicationsGrid(items) {
-  const feed = document.getElementById('publications-feed');
+// Отрисовка данных в текущем выбранном виде
+function renderCurrentView() {
+  const container = document.getElementById('publications-feed');
+  const items = filteredData.slice(0, 60);
 
   if (items.length === 0) {
-    feed.innerHTML = `
+    container.className = 'cards-grid';
+    container.innerHTML = `
       <div class="pub-card" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
         <p style="color: var(--text-muted); font-family: var(--font-serif);">По вашему запросу не найдено исследований.</p>
       </div>`;
     return;
   }
 
-  feed.innerHTML = items.map((item) => {
-    const title = item.title_original || item.title || item.article || 'Научное исследование без названия';
-    const summary = item.summary || item.abstract || item.description || 'Аннотация к работе отсутствует в базе.';
-    const category = item.category || item.discipline || 'Олимпизм';
-    const authors = normalizeAuthors(item);
-    const year = extractYear(item);
-    const country = normalizeCountry(item.country || item.country_name);
-    const docType = normalizeDocType(item.type || item.document_type);
-    const originalUrl = getOriginalUrl(item);
-
-    const realIndex = rawData.indexOf(item);
-    const isFav = favorites.has(realIndex);
-
-    return `
-      <article class="pub-card">
-        <div class="pub-badge-group">
-          <span class="badge-cat">${category}</span>
-          <button style="background:none; border:none; cursor:pointer; font-size:1.1rem; color:${isFav ? 'var(--accent-gold)' : '#ccc'};" onclick="toggleFavorite(${realIndex})">
-            ★
-          </button>
-        </div>
-        
-        <span class="badge-type">${docType}</span>
-        
-        <h3 class="pub-card-title" onclick="openModalByItemIndex(${realIndex})">${escapeHtml(title)}</h3>
-        
-        <div class="pub-author-row">${escapeHtml(authors)} (${year})</div>
-        <div class="pub-country-row">🌐 ${escapeHtml(country)}</div>
-
-        <p class="pub-abstract-text">${escapeHtml(summary)}</p>
-
-        <div class="pub-card-footer">
-          <button class="btn-card-action" onclick="openModalByItemIndex(${realIndex})">
-            Читать аннотацию
-          </button>
-          <a href="${originalUrl}" target="_blank" class="btn-link-original">
-            Оригинал ↗
-          </a>
-        </div>
-      </article>
+  if (currentViewMode === 'grid') {
+    container.className = 'cards-grid';
+    container.innerHTML = items.map(item => renderGridCardHtml(item)).join('');
+  } else if (currentViewMode === 'list') {
+    container.className = 'cards-list';
+    container.innerHTML = items.map(item => renderGridCardHtml(item)).join('');
+  } else if (currentViewMode === 'table') {
+    container.className = 'table-view-container';
+    container.innerHTML = `
+      <table class="academic-table">
+        <thead>
+          <tr>
+            <th>Заглавие исследования</th>
+            <th>Авторы</th>
+            <th>Год</th>
+            <th>Направление</th>
+            <th>Тип</th>
+            <th>Страна</th>
+            <th>Ссылка</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${items.map(item => renderTableRowHtml(item)).join('')}
+        </tbody>
+      </table>
     `;
-  }).join('');
+  }
+}
+
+function renderGridCardHtml(item) {
+  const title = item.title_original || item.title || item.article || 'Научное исследование без названия';
+  const summary = item.summary || item.abstract || item.description || 'Аннотация к работе отсутствует в базе.';
+  const category = item.category || item.discipline || 'Другое';
+  const authors = normalizeAuthors(item);
+  const year = extractYear(item);
+  const country = normalizeCountry(item.country || item.country_name);
+  const docType = normalizeDocType(item.type || item.document_type);
+  const originalUrl = getOriginalUrl(item);
+
+  const realIndex = rawData.indexOf(item);
+  const isFav = favorites.has(realIndex);
+
+  return `
+    <article class="pub-card">
+      <div class="pub-badge-group">
+        <span class="badge-cat">${category}</span>
+        <button style="background:none; border:none; cursor:pointer; font-size:1.1rem; color:${isFav ? 'var(--accent-gold)' : '#ccc'};" onclick="toggleFavorite(${realIndex})">
+          ★
+        </button>
+      </div>
+      
+      <span class="badge-type">${docType}</span>
+      
+      <h3 class="pub-card-title" onclick="openModalByItemIndex(${realIndex})">${escapeHtml(title)}</h3>
+      
+      <div class="pub-author-row">${escapeHtml(authors)} (${year})</div>
+      <div class="pub-country-row">🌐 ${escapeHtml(country)}</div>
+
+      <p class="pub-abstract-text">${escapeHtml(summary)}</p>
+
+      <div class="pub-card-footer">
+        <button class="btn-card-action" onclick="openModalByItemIndex(${realIndex})">
+          Читать аннотацию
+        </button>
+        <a href="${originalUrl}" target="_blank" class="btn-link-original">
+          Оригинал ↗
+        </a>
+      </div>
+    </article>
+  `;
+}
+
+function renderTableRowHtml(item) {
+  const title = item.title_original || item.title || item.article || 'Без названия';
+  const category = item.category || item.discipline || 'Другое';
+  const authors = normalizeAuthors(item);
+  const year = extractYear(item);
+  const country = normalizeCountry(item.country || item.country_name);
+  const docType = normalizeDocType(item.type || item.document_type);
+  const originalUrl = getOriginalUrl(item);
+  const realIndex = rawData.indexOf(item);
+
+  return `
+    <tr>
+      <td><strong style="cursor:pointer; color:var(--primary-navy);" onclick="openModalByItemIndex(${realIndex})">${escapeHtml(title)}</strong></td>
+      <td>${escapeHtml(authors)}</td>
+      <td>${year}</td>
+      <td><span class="badge-cat" style="font-size:0.65rem;">${category}</span></td>
+      <td>${docType}</td>
+      <td>${escapeHtml(country)}</td>
+      <td><a href="${originalUrl}" target="_blank" class="btn-link-original">Открыть ↗</a></td>
+    </tr>
+  `;
 }
 
 function toggleFavorite(index) {
@@ -325,7 +389,7 @@ function openModalByItemIndex(realIndex) {
 
   const title = item.title_original || item.title || item.article || 'Без названия';
   const summary = item.summary || item.abstract || item.description || 'Аннотация отсутствует.';
-  const category = item.category || item.discipline || 'Олимпизм';
+  const category = item.category || item.discipline || 'Другое';
   const authors = normalizeAuthors(item);
   const year = extractYear(item);
   const docType = normalizeDocType(item.type || item.document_type);
@@ -344,7 +408,7 @@ function openModalByItemIndex(realIndex) {
   linkElem.href = originalUrl;
 
   document.getElementById('modal-citation').innerText = 
-    `${authors}.${title} // Олимпийский исследовательский портал. — ${year}. — URL:${originalUrl}`;
+    `${authors}. ${title} // Олимпийский исследовательский портал. — ${year}. — URL: ${originalUrl}`;
 
   document.getElementById('modal-view').classList.add('active');
 }
@@ -353,7 +417,7 @@ function closeModal() {
   document.getElementById('modal-view').classList.remove('active');
 }
 
-/* ОБНОВЛЕНИЕ ДИАГРАММ И ИСПРАВЛЕННЫЙ ГРАФИК ПО ГОДАМ */
+/* ОБНОВЛЕНИЕ ДИАГРАММ С ИСПРАВЛЕННЫМ ГРАФИКОМ ДИНАМИКИ */
 function updateCharts(dataset) {
   if (typeof Chart === 'undefined') return;
 
@@ -361,8 +425,9 @@ function updateCharts(dataset) {
   const catCounts = {};
   STANDARD_CATEGORIES.forEach(c => catCounts[c] = 0);
   dataset.forEach(item => {
-    const c = item.category || item.discipline;
+    const c = item.category || item.discipline || 'Другое';
     if (catCounts[c] !== undefined) catCounts[c]++;
+    else catCounts['Другое']++;
   });
 
   const donutCtx = document.getElementById('donutChart')?.getContext('2d');
@@ -377,7 +442,7 @@ function updateCharts(dataset) {
           data: Object.values(catCounts),
           backgroundColor: [
             '#10233F', '#29496B', '#B38A4B', '#2E7D32', '#C62828',
-            '#00838F', '#6A1B9A', '#D81B60', '#F57F17', '#4E342E'
+            '#00838F', '#6A1B9A', '#D81B60', '#F57F17', '#4E342E', '#78909C'
           ],
           borderWidth: 2,
           borderColor: '#FFFDF9'
@@ -392,7 +457,7 @@ function updateCharts(dataset) {
     });
   }
 
-  // 2. Исправленный график временной динамики публикаций
+  // 2. Исправленный график динамики по годам
   const yearCounts = {};
   dataset.forEach(item => {
     const y = extractYear(item);
@@ -420,7 +485,7 @@ function updateCharts(dataset) {
           fill: true,
           tension: 0.3,
           pointRadius: 2,
-          pointHoverRadius: 5
+          pointHoverRadius: 6
         }]
       },
       options: {
@@ -430,11 +495,17 @@ function updateCharts(dataset) {
         scales: {
           x: { 
             grid: { display: false },
-            ticks: { font: { size: 10 }, color: '#697586' }
+            ticks: { 
+              font: { size: 10 }, 
+              color: '#697586',
+              maxTicksLimit: 8,
+              maxRotation: 0
+            }
           },
           y: { 
             grid: { color: '#E4DED2' },
-            ticks: { font: { size: 10 }, color: '#697586' }
+            ticks: { font: { size: 10 }, color: '#697586' },
+            beginAtZero: true
           }
         }
       }
