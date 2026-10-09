@@ -1,0 +1,37 @@
+﻿name: Автоматический сбор олимпийских исследований
+
+on:
+  schedule:
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+jobs:
+  collect-data:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - name: Проверка кода репозитория
+      uses: actions/checkout@v3
+
+    - name: Настройка Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Установка зависимостей
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests
+
+    - name: Запуск сбора исследований
+      run: |
+        python scripts/auto_collector.py
+
+    - name: Сохранение обновлений в репозиторий
+      run: |
+        git config --global user.name "Olympic Auto-Bot"
+        git config --global user.email "bot@olympic-hub.ru"
+        git add web_data.json generated/web_data.json
+        git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-update: Автоматическое пополнение базы исследований" && git push)
