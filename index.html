@@ -3,12 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PORTALIS OLYMPICA | Академический портал исследований олимпизма</title>
+  <title>Olympic Research Hub | Академическая база исследований</title>
   <link rel="stylesheet" href="styles.css">
+  <!-- Подключение Chart.js для отображения круговой и линейной диаграмм -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
-  <!-- ВЕРХНЯЯ ШАПКА C ТАБАМИ -->
+  <!-- ВЕРХНЯЯ НАВИГАЦИОННАЯ ШАПКА -->
   <header class="site-header">
     <div class="header-container">
       <div class="brand-block">
@@ -18,117 +20,187 @@
           <path d="M12 16H20 M12 22H20 M12 28H18 M28 16H36 M28 22H36 M28 28H34" />
           <path d="M18 8C18 4.68 20.68 2 24 2C27.32 2 30 4.68 30 8" />
         </svg>
-        <div class="brand-titles">
-          <h1 class="portal-title">PORTALIS OLYMPICA</h1>
-          <span class="portal-subtitle">Европейский архив научных исследований олимпизма</span>
-        </div>
+        <span class="brand-title">Olympic Research Hub</span>
       </div>
 
-      <!-- Переключатель режимов (Каталог / Аналитика) -->
-      <nav class="header-nav">
-        <button class="nav-tab-btn active" id="tab-feed-btn" onclick="switchMainTab('feed')">
-          <span>📚 Публикации (1,639)</span>
-        </button>
-        <button class="nav-tab-btn" id="tab-analytics-btn" onclick="switchMainTab('analytics')">
-          <span>📊 Аналитическая панель</span>
-        </button>
-      </nav>
+      <div class="status-badge">
+        <span class="status-dot"></span>
+        <span>Исследований в базе: <strong id="header-stat-count">1 639</strong></span>
+      </div>
     </div>
   </header>
 
-  <!-- ОСНОВНОЙ МАКЕТ -->
-  <div class="layout-wrapper">
-    
-    <!-- ЛЕВАЯ ПАНЕЛЬ ФИЛЬТРОВ И НАВИГАЦИИ -->
-    <aside class="sidebar-panel">
-      <h2 class="sidebar-title">
-        Фильтры и Навигация
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B38A4B" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      </h2>
+  <div class="portal-wrapper">
 
-      <!-- Поисковая строка -->
-      <div class="filter-group">
-        <label class="filter-label" for="search-input">Поиск по заглавию и тексту</label>
-        <div class="search-input-wrapper">
-          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" id="search-input" class="search-input" placeholder="Введите название или ключевое слово...">
+    <!-- HERO ЗАГОЛОВОК -->
+    <section class="hero-banner">
+      <div class="hero-text">
+        <h1 class="hero-title">Olympic Research Hub</h1>
+        <p class="hero-subtitle">Платформа систематического анализа исследований по олимпизму, олимпийскому движению и олимпийскому образованию</p>
+      </div>
+      <svg class="hero-graphic" width="180" height="100" viewBox="0 0 180 100">
+        <circle cx="40" cy="35" r="28" fill="none" stroke-width="2"/>
+        <circle cx="90" cy="35" r="28" fill="none" stroke-width="2"/>
+        <circle cx="140" cy="35" r="28" fill="none" stroke-width="2"/>
+        <circle cx="65" cy="65" r="28" fill="none" stroke-width="2"/>
+        <circle cx="115" cy="65" r="28" fill="none" stroke-width="2"/>
+      </svg>
+    </section>
+
+    <!-- 5 КАРТОЧЕК МЕТРИК -->
+    <section class="metrics-row">
+      <div class="metric-card">
+        <div class="metric-icon-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        </div>
+        <div class="metric-info">
+          <span class="metric-val" id="metric-total-val">1 639</span>
+          <span class="metric-lbl">Исследований в выборке</span>
         </div>
       </div>
 
-      <!-- Рубрикатор по 10 олимпийским дисциплинам -->
-      <div class="filter-group">
-        <label class="filter-label">Научные дисциплины (10)</label>
-        <ul class="category-list" id="category-list">
-          <!-- Категории рендерятся из JS -->
-        </ul>
+      <div class="metric-card">
+        <div class="metric-icon-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <div class="metric-info">
+          <span class="metric-val">1896 – 2026</span>
+          <span class="metric-lbl">Хронология публикаций</span>
+        </div>
       </div>
 
-      <!-- Кнопка сброса фильтров -->
-      <button class="btn-reset-filters" id="reset-filters-btn">
-        🔄 Сбросить все фильтры
-      </button>
-    </aside>
-
-    <!-- ЦЕНТРАЛЬНЫЙ БЛОК КОНТЕНТА -->
-    <main class="main-content">
-      
-      <!-- ИНТЕРАКТИВНЫЙ БЛОК АНАЛИТИКИ И АНИМИРОВАННЫХ ГРАФИКОВ -->
-      <section class="analytics-dashboard-panel" id="analytics-section">
-        <div class="analytics-header">
-          <h2 class="analytics-title">Структура и Метрики Портала</h2>
-          <span style="font-size: 0.8rem; color: var(--accent-gold); font-weight: 600;">Векторный AI-Анализ</span>
+      <div class="metric-card">
+        <div class="metric-icon-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         </div>
+        <div class="metric-info">
+          <span class="metric-val">3 238</span>
+          <span class="metric-lbl">Уникальных авторов</span>
+        </div>
+      </div>
 
-        <!-- Ключевые метрики -->
-        <div class="metrics-grid">
-          <div class="metric-card">
-            <span class="metric-value" id="metric-total">1,639</span>
-            <span class="metric-label">Всего публикаций</span>
+      <div class="metric-card">
+        <div class="metric-icon-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        </div>
+        <div class="metric-info">
+          <span class="metric-val">51</span>
+          <span class="metric-lbl">Журналов и изданий</span>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
+        </div>
+        <div class="metric-info">
+          <span class="metric-val">100%</span>
+          <span class="metric-lbl">Открытый доступ (OA)</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ОСНОВНОЙ 2-КОЛОНОЧНЫЙ БЛОК -->
+    <div class="main-layout">
+
+      <!-- ЛЕВАЯ КОЛОНКА (ФИЛЬТРЫ И ЛЕНТА КАРТОЧЕК) -->
+      <div class="feed-column">
+        
+        <!-- ПАНЕЛЬ ФИЛЬТРАЦИИ -->
+        <section class="filter-card">
+          <!-- Строка поиска -->
+          <div class="search-field-wrapper">
+            <svg class="search-icon-inside" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="search-input" class="search-input-main" placeholder="Поиск по заглавию, авторам, методам...">
           </div>
-          <div class="metric-card">
-            <span class="metric-value" id="metric-top-cat">100%</span>
-            <span class="metric-label">Охват классификации</span>
+
+          <!-- Выпадающие списки (4 шт) -->
+          <div class="filter-selects-grid">
+            <select id="select-category" class="filter-select">
+              <option value="ALL">Все направления</option>
+            </select>
+
+            <select id="select-doctype" class="filter-select">
+              <option value="ALL">Тип документа (Все)</option>
+              <option value="Научная статья">Научная статья</option>
+              <option value="Монография">Монография</option>
+              <option value="Материалы конференции">Материалы конференции</option>
+            </select>
+
+            <select id="select-country" class="filter-select">
+              <option value="ALL">Все страны</option>
+              <option value="Россия">Россия</option>
+              <option value="Международные">Международные</option>
+            </select>
+
+            <select id="select-language" class="filter-select">
+              <option value="ALL">Все языки</option>
+              <option value="ru">Русский</option>
+              <option value="en">Английский</option>
+            </select>
           </div>
-          <div class="metric-card">
-            <span class="metric-value" style="color: var(--accent-gold);">ГОСТ</span>
-            <span class="metric-label">Стандарт цитирования</span>
+
+          <!-- Поля диапазона годов -->
+          <div class="filter-years-row">
+            <input type="number" id="year-from" class="input-year" placeholder="Год от (1896)" min="1896" max="2026">
+            <input type="number" id="year-to" class="input-year" placeholder="Год до (2026)" min="1896" max="2026">
+          </div>
+
+          <!-- Кнопки действий -->
+          <div class="filter-actions-row">
+            <button class="btn-secondary" id="btn-reset">🔄 Сбросить фильтры</button>
+            
+            <div style="display: flex; gap: 0.75rem;">
+              <button class="btn-gold-action" id="btn-fav-filter">★ Избранное (<span id="fav-count">0</span>)</button>
+              <button class="btn-primary-dark" id="btn-export-csv">📊 Экспорт в CSV</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ТУЛБАР ВЫДАЧИ -->
+        <div class="toolbar-row">
+          <div class="results-counter">
+            Найдено исследований: <strong id="current-count">1 639</strong>
           </div>
         </div>
 
-        <!-- Анимированная диаграмма распределения -->
-        <h3 class="chart-section-title">Распределение работ по 10 направлениям</h3>
-        <div class="chart-bars-list" id="chart-bars-container">
-          <!-- Графики рендерятся из JS -->
+        <!-- ЛЕНТА КАРТОЧЕК ПУБЛИКАЦИЙ -->
+        <div id="publications-feed" class="cards-grid">
+          <!-- Карточки загружаются автоматически -->
         </div>
-      </section>
 
-      <!-- ПАНЕЛЬ УПРАВЛЕНИЯ ВЫДАЧЕЙ -->
-      <div class="toolbar-panel">
-        <div class="results-count">
-          Найдено публикаций: <strong id="current-count">1639</strong>
-        </div>
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <label for="sort-select" style="font-size: 0.82rem; color: var(--text-muted);">Сортировка:</label>
-          <select id="sort-select" class="sort-select">
-            <option value="default">По умолчанию</option>
-            <option value="title">По заглавию (А-Я / A-Z)</option>
-          </select>
-        </div>
       </div>
 
-      <!-- ЛЕНТА КАРТОЧЕК ПУБЛИКАЦИЙ -->
-      <div id="publications-feed">
-        <!-- Карточки загружаются автоматически -->
-      </div>
+      <!-- ПРАВАЯ КОЛОНКА (АНАЛИТИКА И ГРАФИКИ) -->
+      <aside class="analytics-sidebar-card">
+        <h2 class="analytics-main-title">Аналитика выборки</h2>
 
-    </main>
+        <!-- Круговая диаграмма дисциплин -->
+        <div class="chart-block">
+          <h3 class="chart-subtitle">Направления олимпизма</h3>
+          <div class="canvas-container">
+            <canvas id="donutChart"></canvas>
+          </div>
+        </div>
+
+        <!-- График динамики публикаций -->
+        <div class="chart-block">
+          <h3 class="chart-subtitle">Динамика по годам</h3>
+          <div class="canvas-container">
+            <canvas id="lineChart"></canvas>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+
   </div>
 
   <!-- МОДАЛЬНОЕ ОКНО -->
   <div class="modal-backdrop" id="modal-view">
     <div class="modal-content">
       <button class="modal-close-btn" id="modal-close">&times;</button>
-      <span class="discipline-tag" id="modal-discipline">Дисциплина</span>
+      <span class="badge-cat" id="modal-discipline">Дисциплина</span>
       <h2 class="modal-title" id="modal-title">Название научной работы</h2>
       
       <div class="modal-abstract-full" id="modal-abstract">
