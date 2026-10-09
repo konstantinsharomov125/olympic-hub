@@ -8,7 +8,7 @@
 </head>
 <body>
 
-  <!-- ВЕРХНЯЯ НАВИГАЦИОННАЯ ПАНЕЛЬ -->
+  <!-- ВЕРХНЯЯ ШАПКА C ТАБАМИ -->
   <header class="site-header">
     <div class="header-container">
       <div class="brand-block">
@@ -24,33 +24,31 @@
         </div>
       </div>
 
-      <div class="header-stats">
-        <div class="stat-item">
-          Всего публикаций: <strong id="stat-total">1,639</strong>
-        </div>
-        <div class="stat-item">
-          Дисциплин: <strong>10</strong>
-        </div>
-        <div class="stat-item">
-          Статус: <strong>Рецензировано</strong>
-        </div>
-      </div>
+      <!-- Переключатель режимов (Каталог / Аналитика) -->
+      <nav class="header-nav">
+        <button class="nav-tab-btn active" id="tab-feed-btn" onclick="switchMainTab('feed')">
+          <span>📚 Публикации (1,639)</span>
+        </button>
+        <button class="nav-tab-btn" id="tab-analytics-btn" onclick="switchMainTab('analytics')">
+          <span>📊 Аналитическая панель</span>
+        </button>
+      </nav>
     </div>
   </header>
 
-  <!-- ОСНОВНОЙ КОНТЕНТ С ФИЛЬТРАМИ -->
+  <!-- ОСНОВНОЙ МАКЕТ -->
   <div class="layout-wrapper">
     
-    <!-- ЛЕВАЯ ПАНЕЛЬ ФИЛЬТРАЦИИ И ПОИСКА -->
+    <!-- ЛЕВАЯ ПАНЕЛЬ ФИЛЬТРОВ И НАВИГАЦИИ -->
     <aside class="sidebar-panel">
       <h2 class="sidebar-title">
-        Поиск и Навигация
+        Фильтры и Навигация
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B38A4B" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       </h2>
 
       <!-- Поисковая строка -->
       <div class="filter-group">
-        <label class="filter-label" for="search-input">Ключевое слово или заглавие</label>
+        <label class="filter-label" for="search-input">Поиск по заглавию и тексту</label>
         <div class="search-input-wrapper">
           <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <input type="text" id="search-input" class="search-input" placeholder="Введите название или ключевое слово...">
@@ -61,20 +59,50 @@
       <div class="filter-group">
         <label class="filter-label">Научные дисциплины (10)</label>
         <ul class="category-list" id="category-list">
-          <li class="category-item">
-            <button class="active" data-category="ALL">
-              <span>Все направления</span>
-              <span class="category-count" id="count-all">1639</span>
-            </button>
-          </li>
+          <!-- Категории рендерятся из JS -->
         </ul>
       </div>
+
+      <!-- Кнопка сброса фильтров -->
+      <button class="btn-reset-filters" id="reset-filters-btn">
+        🔄 Сбросить все фильтры
+      </button>
     </aside>
 
-    <!-- ОСНОВНАЯ ЛЕНТА ПУБЛИКАЦИЙ -->
+    <!-- ЦЕНТРАЛЬНЫЙ БЛОК КОНТЕНТА -->
     <main class="main-content">
       
-      <!-- Панель управления лентой -->
+      <!-- ИНТЕРАКТИВНЫЙ БЛОК АНАЛИТИКИ И АНИМИРОВАННЫХ ГРАФИКОВ -->
+      <section class="analytics-dashboard-panel" id="analytics-section">
+        <div class="analytics-header">
+          <h2 class="analytics-title">Структура и Метрики Портала</h2>
+          <span style="font-size: 0.8rem; color: var(--accent-gold); font-weight: 600;">Векторный AI-Анализ</span>
+        </div>
+
+        <!-- Ключевые метрики -->
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <span class="metric-value" id="metric-total">1,639</span>
+            <span class="metric-label">Всего публикаций</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-value" id="metric-top-cat">100%</span>
+            <span class="metric-label">Охват классификации</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-value" style="color: var(--accent-gold);">ГОСТ</span>
+            <span class="metric-label">Стандарт цитирования</span>
+          </div>
+        </div>
+
+        <!-- Анимированная диаграмма распределения -->
+        <h3 class="chart-section-title">Распределение работ по 10 направлениям</h3>
+        <div class="chart-bars-list" id="chart-bars-container">
+          <!-- Графики рендерятся из JS -->
+        </div>
+      </section>
+
+      <!-- ПАНЕЛЬ УПРАВЛЕНИЯ ВЫДАЧЕЙ -->
       <div class="toolbar-panel">
         <div class="results-count">
           Найдено публикаций: <strong id="current-count">1639</strong>
@@ -88,15 +116,15 @@
         </div>
       </div>
 
-      <!-- Контейнер карточек -->
+      <!-- ЛЕНТА КАРТОЧЕК ПУБЛИКАЦИЙ -->
       <div id="publications-feed">
-        <!-- Карточки загружаются автоматически через JS -->
+        <!-- Карточки загружаются автоматически -->
       </div>
 
     </main>
   </div>
 
-  <!-- МОДАЛЬНОЕ ОКНО ДЕТАЛЬНОГО ПРОСМОТРА И ЦИТИРОВАНИЯ -->
+  <!-- МОДАЛЬНОЕ ОКНО -->
   <div class="modal-backdrop" id="modal-view">
     <div class="modal-content">
       <button class="modal-close-btn" id="modal-close">&times;</button>

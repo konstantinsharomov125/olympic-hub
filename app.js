@@ -18,6 +18,7 @@ const CATEGORIES = [
 document.addEventListener('DOMContentLoaded', async () => {
   await loadDataset();
   renderCategorySidebar();
+  renderAnalyticsDashboard();
   setupEventListeners();
   applyFilters();
 });
@@ -42,23 +43,18 @@ async function loadDataset() {
   }
 
   if (!loaded) {
-    console.error("Ошибка загрузки файла базы данных web_data.json");
+    console.error("Ошибка загрузки файла web_data.json");
     document.getElementById('publications-feed').innerHTML = 
       `<div class="publication-card"><p style="color:red;">❌ Ошибка: Не удалось загрузить базу web_data.json</p></div>`;
   }
 }
 
+// Отрисовка левого сайдбара с фильтрами
 function renderCategorySidebar() {
   const container = document.getElementById('category-list');
-  const counts = {};
-  CATEGORIES.forEach(cat => counts[cat] = 0);
-  
-  rawData.forEach(item => {
-    const cat = item.category || item.discipline;
-    if (counts[cat] !== undefined) counts[cat]++;
-  });
+  const counts = getCategoryCounts(rawData);
 
-  document.getElementById('stat-total').innerText = rawData.length.toLocaleString('ru-RU');
+  document.getElementById('metric-total').innerText = rawData.length.toLocaleString('ru-RU');
 
   const html = CATEGORIES.map(cat => `
     <li class="category-item">
@@ -79,19 +75,73 @@ function renderCategorySidebar() {
   ` + html;
 }
 
+// Отрисовка анимированных графиков аналитики
+function renderAnalyticsDashboard() {
+  const container = document.getElementById('chart-bars-container');
+  const counts = getCategoryCounts(rawData);
+  const maxCount = Math.max(...Object.values(counts), 1);
+
+  const html = CATEGORIES.map(cat => {
+    const count = counts[cat] || 0;
+    const percentage = Math.round((count / (rawData.length || 1)) * 100);
+    const barWidth = Math.round((count / maxCount) * 100);
+
+    return `
+      <div class="chart-bar-item">
+        <div class="chart-bar-meta">
+          <span><strong>${cat}</strong></span>
+          <span>${count} работ (${percentage}%)</span>
+        </div>
+        <div class="chart-bar-track">
+          <div class="chart-bar-fill" data-width="${barWidth}%" style="width: 0%;"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  container.innerHTML = html;
+
+  // Плавный запуск анимации полос при загрузке
+  setTimeout(() => {
+    document.querySelectorAll('.chart-bar-fill').forEach(bar => {
+      bar.style.width = bar.dataset.width;
+    });
+  }, 100);
+}
+
+function getCategoryCounts(dataArray) {
+  const counts = {};
+  CATEGORIES.forEach(cat => counts[cat] = 0);
+  
+  dataArray.forEach(item => {
+    const cat = item.category || item.discipline;
+    if (counts[cat] !== undefined) counts[cat]++;
+  });
+  return counts;
+}
+
 function setupEventListeners() {
   document.getElementById('search-input').addEventListener('input', applyFilters);
   document.getElementById('sort-select').addEventListener('change', applyFilters);
   
+  // Клик по категориям
   document.getElementById('category-list').addEventListener('click', (e) => {
     const btn = e.target.closest('button');
     if (!btn) return;
     
     activeCategory = btn.dataset.category;
-    
     document.querySelectorAll('#category-list button').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     
+    applyFilters();
+  });
+
+  // Сброс фильтров
+  document.getElementById('reset-filters-btn').addEventListener('click', () => {
+    document.getElementById('search-input').value = '';
+    activeCategory = 'ALL';
+    document.querySelectorAll('#category-list button').forEach(b => b.classList.remove('active'));
+    document.querySelector('#category-list button[data-category="ALL"]').classList.add('active');
     applyFilters();
   });
 
@@ -99,6 +149,28 @@ function setupEventListeners() {
   document.getElementById('modal-view').addEventListener('click', (e) => {
     if (e.target.id === 'modal-view') closeModal();
   });
+}
+
+function switchMainTab(tab) {
+  const analyticsSec = document.getElementById('analytics-section');
+  const feedBtn = document.getElementById('tab-feed-btn');
+  const analyticsBtn = document.getElementById('tab-analytics-btn');
+
+  if (tab === 'analytics') {
+    analyticsSec.style.display = 'flex';
+    feedBtn.classList.remove('active');
+    analyticsBtn.classList.add('active');
+    
+    // Перезапуск анимации полос
+    document.querySelectorAll('.chart-bar-fill').forEach(bar => {
+      bar.style.width = '0%';
+      setTimeout(() => bar.style.width = bar.dataset.width, 50);
+    });
+  } else {
+    analyticsSec.style.display = 'flex'; // Показываем панель в общем виде
+    analyticsBtn.classList.remove('active');
+    feedBtn.classList.add('active');
+  }
 }
 
 function applyFilters() {
