@@ -3,14 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Olympic Research Hub | Академическая база исследований</title>
+  <title>Olympic Research Hub</title>
   <link rel="stylesheet" href="styles.css">
-  <!-- Подключение Chart.js для отображения круговой и линейной диаграмм -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
-  <!-- ВЕРХНЯЯ НАВИГАЦИОННАЯ ШАПКА -->
+  <!-- ВЕРХНЯЯ ШАПКА -->
   <header class="site-header">
     <div class="header-container">
       <div class="brand-block">
@@ -32,7 +31,7 @@
 
   <div class="portal-wrapper">
 
-    <!-- HERO ЗАГОЛОВОК -->
+    <!-- HERO БЛОК С ОРИГИНАЛЬНЫМ РУССКИМ ТЕКСТОМ -->
     <section class="hero-banner">
       <div class="hero-text">
         <h1 class="hero-title">Olympic Research Hub</h1>
@@ -95,63 +94,56 @@
         </div>
         <div class="metric-info">
           <span class="metric-val">100%</span>
-          <span class="metric-lbl">Открытый доступ (OA)</span>
+          <span class="metric-lbl">Открытый доступ (Open Access)</span>
         </div>
       </div>
     </section>
 
-    <!-- ОСНОВНОЙ 2-КОЛОНОЧНЫЙ БЛОК -->
+    <!-- ОСНОВНОЙ 2-КОЛОНОЧНЫЙ МАКЕТ -->
     <div class="main-layout">
 
-      <!-- ЛЕВАЯ КОЛОНКА (ФИЛЬТРЫ И ЛЕНТА КАРТОЧЕК) -->
+      <!-- ЛЕВАЯ КОЛОНКА (ФИЛЬТРЫ И КАРТОЧКИ) -->
       <div class="feed-column">
         
         <!-- ПАНЕЛЬ ФИЛЬТРАЦИИ -->
         <section class="filter-card">
-          <!-- Строка поиска -->
+          <!-- Поиск -->
           <div class="search-field-wrapper">
             <svg class="search-icon-inside" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <input type="text" id="search-input" class="search-input-main" placeholder="Поиск по заглавию, авторам, методам...">
           </div>
 
-          <!-- Выпадающие списки (4 шт) -->
+          <!-- 4 ВЫПАДАЮЩИХ СПИСКА ФИЛЬТРОВ -->
           <div class="filter-selects-grid">
             <select id="select-category" class="filter-select">
-              <option value="ALL">Все направления</option>
+              <option value="ALL">Направление (Все)</option>
             </select>
 
             <select id="select-doctype" class="filter-select">
               <option value="ALL">Тип документа (Все)</option>
-              <option value="Научная статья">Научная статья</option>
-              <option value="Монография">Монография</option>
-              <option value="Материалы конференции">Материалы конференции</option>
             </select>
 
             <select id="select-country" class="filter-select">
               <option value="ALL">Все страны</option>
-              <option value="Россия">Россия</option>
-              <option value="Международные">Международные</option>
             </select>
 
             <select id="select-language" class="filter-select">
               <option value="ALL">Все языки</option>
-              <option value="ru">Русский</option>
-              <option value="en">Английский</option>
             </select>
           </div>
 
-          <!-- Поля диапазона годов -->
+          <!-- Год от / Год до -->
           <div class="filter-years-row">
-            <input type="number" id="year-from" class="input-year" placeholder="Год от (1896)" min="1896" max="2026">
-            <input type="number" id="year-to" class="input-year" placeholder="Год до (2026)" min="1896" max="2026">
+            <input type="number" id="year-from" class="input-year" placeholder="Год от" min="1896" max="2026">
+            <input type="number" id="year-to" class="input-year" placeholder="Год до" min="1896" max="2026">
           </div>
 
-          <!-- Кнопки действий -->
+          <!-- Кнопки сброса, избранного и экспорта -->
           <div class="filter-actions-row">
             <button class="btn-secondary" id="btn-reset">🔄 Сбросить фильтры</button>
             
             <div style="display: flex; gap: 0.75rem;">
-              <button class="btn-gold-action" id="btn-fav-filter">★ Избранное (<span id="fav-count">0</span>)</button>
+              <button class="btn-gold-action" id="btn-fav-filter">★ Избранное ( <span id="fav-count">0</span> )</button>
               <button class="btn-primary-dark" id="btn-export-csv">📊 Экспорт в CSV</button>
             </div>
           </div>
@@ -162,20 +154,22 @@
           <div class="results-counter">
             Найдено исследований: <strong id="current-count">1 639</strong>
           </div>
+          <div style="font-size: 0.82rem; color: var(--text-muted);">
+            Вид: <strong style="color: var(--primary-navy);">▧ Grid</strong>
+          </div>
         </div>
 
         <!-- ЛЕНТА КАРТОЧЕК ПУБЛИКАЦИЙ -->
         <div id="publications-feed" class="cards-grid">
-          <!-- Карточки загружаются автоматически -->
+          <!-- Карточки загружаются динамически -->
         </div>
 
       </div>
 
       <!-- ПРАВАЯ КОЛОНКА (АНАЛИТИКА И ГРАФИКИ) -->
       <aside class="analytics-sidebar-card">
-        <h2 class="analytics-main-title">Аналитика выборки</h2>
+        <h2 class="analytics-main-title">АНАЛИТИКА ВЫБОРКИ</h2>
 
-        <!-- Круговая диаграмма дисциплин -->
         <div class="chart-block">
           <h3 class="chart-subtitle">Направления олимпизма</h3>
           <div class="canvas-container">
@@ -183,7 +177,6 @@
           </div>
         </div>
 
-        <!-- График динамики публикаций -->
         <div class="chart-block">
           <h3 class="chart-subtitle">Динамика по годам</h3>
           <div class="canvas-container">
@@ -196,18 +189,31 @@
 
   </div>
 
-  <!-- МОДАЛЬНОЕ ОКНО -->
+  <!-- МОДАЛЬНОЕ ОКНО ПРОСМОТРА И ПРЯМОЙ ССЫЛКИ НА ОРИГИНАЛ -->
   <div class="modal-backdrop" id="modal-view">
     <div class="modal-content">
       <button class="modal-close-btn" id="modal-close">&times;</button>
       <span class="badge-cat" id="modal-discipline">Дисциплина</span>
       <h2 class="modal-title" id="modal-title">Название научной работы</h2>
       
+      <div class="modal-meta-grid">
+        <div><strong>Авторы:</strong> <span id="modal-authors">—</span></div>
+        <div><strong>Год:</strong> <span id="modal-year">—</span></div>
+        <div><strong>Тип:</strong> <span id="modal-doctype">—</span></div>
+        <div><strong>Страна:</strong> <span id="modal-country">—</span></div>
+      </div>
+
       <div class="modal-abstract-full" id="modal-abstract">
         Полный текст аннотации...
       </div>
 
-      <h4 style="font-family: var(--font-serif); color: var(--primary-navy); margin-bottom: 0.5rem;">Цитирование (ГОСТ Р 7.0.100–2018)</h4>
+      <div class="modal-actions">
+        <a href="#" id="modal-original-link" target="_blank" class="btn-primary-dark">
+          🔗 Открыть оригинал исследования
+        </a>
+      </div>
+
+      <h4 style="font-family: var(--font-serif); color: var(--primary-navy); margin-top: 1.5rem; margin-bottom: 0.5rem;">Цитирование (ГОСТ Р 7.0.100–2018)</h4>
       <div class="citation-box" id="modal-citation">
         Загрузка цитаты...
       </div>
