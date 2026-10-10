@@ -3,35 +3,24 @@ import json
 
 DATA_FILE = "web_data.json"
 
-# 1. СТРОГИЙ СПИСОК ОЛИМПИЙСКИХ КЛЮЧЕВЫХ СЛОВ (Хотя бы одно должно присутствовать!)
-OLYMPIC_KEYWORDS = [
+# ОБЯЗАТЕЛЬНЫЕ ОЛИМПИЙСКИЕ МАРКЕРЫ
+# В названии или аннотации ДОЛЖНО быть хотя бы одно из этих слов/сочетаний:
+OLYMPIC_MARKERS = [
     'олимп', 'olympic', 'олимпиад', 'olympiad',
     'паралимп', 'paralympic', 'дефлимп', 'deaflympic',
     'кубертен', 'coubertin', 'мок', 'ioc',
-    'олимпийск', 'олимпийское образование', 'olympic education',
-    'олимпийское движение', 'olympic movement', 'олимпийские игры', 'olympic games',
+    'олимпийское образование', 'olympic education',
+    'олимпийское движение', 'olympic movement', 
+    'олимпийские игры', 'olympic games',
     'антидопинг', 'wada', 'вада'
-]
-
-# 2. РАСШИРЕННЫЙ СПИСОК СТОП-СЛОВ (Исключаем посторонние гуманитарные/бытовые темы)
-STOP_KEYWORDS = [
-    'речевой этикет', 'лингвистик', 'грамматик', 'синтаксис', 
-    'фольклор', 'литературоведен', 'поэтик', 'фразеологизм',
-    'терминология', 'языкознан', 'дидактика языка', 'орфографи',
-    'методика преподавания русского', 'художественная литература'
 ]
 
 def is_strictly_olympic(title, summary):
     text = (str(title) + " " + str(summary)).lower()
     
-    # 1. Проверка на стоп-слова
-    for stop_word in STOP_KEYWORDS:
-        if stop_word in text:
-            return False
-            
-    # 2. Строгая проверка на наличие олимпийской тематики
-    for keyword in OLYMPIC_KEYWORDS:
-        if keyword in text:
+    # Проверяем, есть ли хотя бы один олимпийский маркер
+    for marker in OLYMPIC_MARKERS:
+        if marker in text:
             return True
             
     return False
@@ -46,7 +35,7 @@ def cleanup_and_filter():
 
     initial_count = len(data)
     
-    # Отбираем только работы, соответствующие строгой олимпийской тематике
+    # Оставляем только те статьи, в которых прямо упоминается олимпизм
     clean_data = []
     for item in data:
         title = item.get('title_original') or item.get('title', '')
@@ -56,7 +45,7 @@ def cleanup_and_filter():
             clean_data.append(item)
 
     removed_count = initial_count - len(clean_data)
-    print(f"🧹 Исключено неолимпийских работ: {removed_count}")
+    print(f"🧹 Исключено посторонних работ (без олимпийских маркеров): {removed_count}")
     print(f"🥇 Осталось строго олимпийских исследований: {len(clean_data)}")
 
     # Сохраняем очищенную базу
