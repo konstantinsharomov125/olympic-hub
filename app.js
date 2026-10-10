@@ -129,13 +129,26 @@ function getOriginalUrl(item) {
   return 'https://scholar.google.com';
 }
 
-// Правильное формирование библиографической ссылки по ГОСТ Р 7.0.100-2018 (строго на первоисточник)
+// Корректное формирование библиографической ссылки по ГОСТ Р 7.0.100-2018 (без подстановки категорий сайта)
 function generateGostCitation(item) {
     let authors = normalizeAuthors(item);
     let title = item.title_original || item.title || item.article || "Без названия";
     let year = extractYear(item);
     let originalUrl = getOriginalUrl(item);
-    let sourceField = item.journal || item.category || "Научное издание";
+    
+    // Ищем реальный источник (журнал, издательство, университет), исключая категории сайта
+    let sourceField = item.journal || item.publisher || item.institution || item.university || "";
+    
+    if (!sourceField || sourceField === "Другое") {
+        const docType = normalizeDocType(item.type || item.document_type);
+        if (docType === 'Диссертация' || docType === 'Выпускная квалификационная работа') {
+            sourceField = "Материалы квалификационной работы";
+        } else if (docType === 'Материалы конференции') {
+            sourceField = "Сборник материалов научной конференции";
+        } else {
+            sourceField = "Электронный ресурс / Научная публикация";
+        }
+    }
     
     let citation = `${authors}. ${title} // ${sourceField}. – ${year}.`;
     
