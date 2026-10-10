@@ -13,10 +13,10 @@ jobs:
 
     steps:
     - name: Проверка кода репозитория
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Настройка Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.10'
 
@@ -35,3 +35,10 @@ jobs:
         git config --global user.email "bot@olympic-hub.ru"
         git add web_data.json generated/web_data.json
         git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-update: Автоматическое пополнение базы исследований" && git push)
+
+    - name: Уведомление в ВКонтакте
+      env:
+        VK_BOT_TOKEN: ${{ secrets.VK_BOT_TOKEN }}
+        VK_USER_ID: ${{ secrets.VK_USER_ID }}
+      run: |
+        python scripts/vk_bot.py
