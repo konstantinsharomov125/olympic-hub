@@ -387,7 +387,7 @@ function renderGridCardHtml(item) {
       <div class="pub-country-row">🌐 ${escapeHtml(country)}</div>
 
       <div class="ai-summary-box" style="margin-top: 8px; margin-bottom: 8px; padding: 8px 10px; background: #f0f4f8; border-left: 3px solid #10233F; border-radius: 4px; font-size: 11px; color: #1a202c;">
-        <span style="font-weight: bold; color: #10233F;">✨ AI-резюме:</span> ${escapeHtml(summary)}
+        <span style="font-weight: bold; color: #10233F;">📌 Аннотация:</span> ${escapeHtml(summary)}
       </div>
 
       <div class="gost-citation-box" style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 6px; border: 1px solid #e9ecef; font-size: 11px; color: #333;">
