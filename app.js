@@ -129,6 +129,46 @@ function getOriginalUrl(item) {
   return 'https://scholar.google.com';
 }
 
+// Правильное формирование библиографической ссылки по ГОСТ Р 7.0.100-2018 (строго на первоисточник)
+function generateGostCitation(item) {
+    let authors = normalizeAuthors(item);
+    let title = item.title_original || item.title || item.article || "Без названия";
+    let year = extractYear(item);
+    let originalUrl = getOriginalUrl(item);
+    let sourceField = item.journal || item.category || "Научное издание";
+    
+    let citation = `${authors}. ${title} // ${sourceField}. – ${year}.`;
+    
+    if (originalUrl) {
+        citation += ` – URL: ${originalUrl}`;
+    }
+    
+    let currentDate = new Date().toLocaleDateString('ru-RU');
+    citation += ` (дата обращения: ${currentDate}).`;
+    
+    return citation;
+}
+
+// Копирование цитаты в буфер обмена
+function copyGostCitation(buttonElement, realIndex) {
+    const item = rawData[realIndex];
+    if (!item) return;
+    
+    const citation = generateGostCitation(item);
+    navigator.clipboard.writeText(citation).then(() => {
+        let originalText = buttonElement.innerText;
+        buttonElement.innerText = "✅ Скопировано!";
+        buttonElement.style.background = "#d4edda";
+        setTimeout(() => {
+            buttonElement.innerText = originalText;
+            buttonElement.style.background = "";
+        }, 2000);
+    }).catch(err => {
+        console.error("Ошибка копирования: ", err);
+        alert("Не удалось скопировать в буфер обмена.");
+    });
+}
+
 // Заполнение обновлённых выпадающих списков
 function populateDropdownFilters() {
   const selectCat = document.getElementById('select-category');
@@ -210,7 +250,6 @@ function setupEventListeners() {
   });
 }
 
-// Переключение между вариантами вида: Grid, List, Table
 function changeViewMode(mode) {
   currentViewMode = mode;
   document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
@@ -218,7 +257,6 @@ function changeViewMode(mode) {
   renderCurrentView();
 }
 
-// Применение фильтрации
 function applyFilters() {
   const searchVal = document.getElementById('search-input').value.toLowerCase().trim();
   const catVal = document.getElementById('select-category').value;
@@ -264,7 +302,6 @@ function applyFilters() {
   updateCharts(filteredData);
 }
 
-// Отрисовка данных в текущем выбранном виде
 function renderCurrentView() {
   const container = document.getElementById('publications-feed');
   const items = filteredData.slice(0, 60);
@@ -319,6 +356,7 @@ function renderGridCardHtml(item) {
 
   const realIndex = rawData.indexOf(item);
   const isFav = favorites.has(realIndex);
+  const gostCitationText = generateGostCitation(item);
 
   return `
     <article class="pub-card">
@@ -338,7 +376,15 @@ function renderGridCardHtml(item) {
 
       <p class="pub-abstract-text">${escapeHtml(summary)}</p>
 
-      <div class="pub-card-footer">
+      <div class="gost-citation-box" style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 6px; border: 1px solid #e9ecef; font-size: 11px; color: #333;">
+        <div style="font-weight: bold; margin-bottom: 3px; color: #555;">📋 ГОСТ Р 7.0.100-2018:</div>
+        <div style="margin-bottom: 6px; font-style: italic; line-height: 1.3;">${escapeHtml(gostCitationText)}</div>
+        <button onclick="copyGostCitation(this, ${realIndex})" style="background: #007bff; color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 500;">
+          📋 Копировать цитату
+        </button>
+      </div>
+
+      <div class="pub-card-footer" style="margin-top: 10px;">
         <button class="btn-card-action" onclick="openModalByItemIndex(${realIndex})">
           Читать аннотацию
         </button>
@@ -407,8 +453,7 @@ function openModalByItemIndex(realIndex) {
   const linkElem = document.getElementById('modal-original-link');
   linkElem.href = originalUrl;
 
-  document.getElementById('modal-citation').innerText = 
-    `${authors}. ${title} // Олимпийский исследовательский портал. — ${year}. — URL: ${originalUrl}`;
+  document.getElementById('modal-citation').innerText = generateGostCitation(item);
 
   document.getElementById('modal-view').classList.add('active');
 }
@@ -417,11 +462,9 @@ function closeModal() {
   document.getElementById('modal-view').classList.remove('active');
 }
 
-/* ОБНОВЛЕНИЕ ДИАГРАММ С ИСПРАВЛЕННЫМ ГРАФИКОМ ДИНАМИКИ */
 function updateCharts(dataset) {
   if (typeof Chart === 'undefined') return;
 
-  // 1. Круговая диаграмма
   const catCounts = {};
   STANDARD_CATEGORIES.forEach(c => catCounts[c] = 0);
   dataset.forEach(item => {
@@ -457,7 +500,6 @@ function updateCharts(dataset) {
     });
   }
 
-  // 2. Исправленный график динамики по годам
   const yearCounts = {};
   dataset.forEach(item => {
     const y = extractYear(item);
