@@ -29,12 +29,16 @@ jobs:
       run: |
         python scripts/auto_collector.py
 
+    - name: Запуск AI-обработки и перевода аннотаций
+      run: |
+        python scripts/ai_summarizer.py
+
     - name: Сохранение обновлений в репозиторий
       run: |
         git config --global user.name "Olympic Auto-Bot"
         git config --global user.email "bot@olympic-hub.ru"
         git add web_data.json generated/web_data.json
-        git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-update: Автоматическое пополнение базы исследований" && git push)
+        git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-update: Автоматическое пополнение базы и AI-обработка" && git push)
 
     - name: Уведомление в ВКонтакте
       env:

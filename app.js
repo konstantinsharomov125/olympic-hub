@@ -129,14 +129,13 @@ function getOriginalUrl(item) {
   return 'https://scholar.google.com';
 }
 
-// Корректное формирование библиографической ссылки по ГОСТ Р 7.0.100-2018 (без подстановки категорий сайта)
+// Формирование библиографической ссылки по ГОСТ Р 7.0.100-2018
 function generateGostCitation(item) {
     let authors = normalizeAuthors(item);
     let title = item.title_original || item.title || item.article || "Без названия";
     let year = extractYear(item);
     let originalUrl = getOriginalUrl(item);
     
-    // Ищем реальный источник (журнал, издательство, университет), исключая категории сайта
     let sourceField = item.journal || item.publisher || item.institution || item.university || "";
     
     if (!sourceField || sourceField === "Другое") {
@@ -182,7 +181,7 @@ function copyGostCitation(buttonElement, realIndex) {
     });
 }
 
-// Заполнение обновлённых выпадающих списков
+// Заполнение выпадающих списков
 function populateDropdownFilters() {
   const selectCat = document.getElementById('select-category');
   const selectDocType = document.getElementById('select-doctype');
@@ -299,7 +298,7 @@ function applyFilters() {
     if (!isNaN(yearTo) && year > yearTo) return false;
 
     const title = (item.title_original || item.title || item.article || '').toLowerCase();
-    const summary = (item.summary || item.abstract || item.description || '').toLowerCase();
+    const summary = (item.summary_ru || item.summary || item.abstract || item.description || '').toLowerCase();
     const authors = normalizeAuthors(item).toLowerCase();
 
     if (searchVal && !title.includes(searchVal) && !summary.includes(searchVal) && !authors.includes(searchVal)) return false;
@@ -359,7 +358,7 @@ function renderCurrentView() {
 
 function renderGridCardHtml(item) {
   const title = item.title_original || item.title || item.article || 'Научное исследование без названия';
-  const summary = item.summary || item.abstract || item.description || 'Аннотация к работе отсутствует в базе.';
+  const summary = item.summary_ru || item.summary || item.abstract || item.description || 'Аннотация к работе отсутствует в базе.';
   const category = item.category || item.discipline || 'Другое';
   const authors = normalizeAuthors(item);
   const year = extractYear(item);
@@ -387,7 +386,9 @@ function renderGridCardHtml(item) {
       <div class="pub-author-row">${escapeHtml(authors)} (${year})</div>
       <div class="pub-country-row">🌐 ${escapeHtml(country)}</div>
 
-      <p class="pub-abstract-text">${escapeHtml(summary)}</p>
+      <div class="ai-summary-box" style="margin-top: 8px; margin-bottom: 8px; padding: 8px 10px; background: #f0f4f8; border-left: 3px solid #10233F; border-radius: 4px; font-size: 11px; color: #1a202c;">
+        <span style="font-weight: bold; color: #10233F;">✨ AI-резюме:</span> ${escapeHtml(summary)}
+      </div>
 
       <div class="gost-citation-box" style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 6px; border: 1px solid #e9ecef; font-size: 11px; color: #333;">
         <div style="font-weight: bold; margin-bottom: 3px; color: #555;">📋 ГОСТ Р 7.0.100-2018:</div>
@@ -447,7 +448,7 @@ function openModalByItemIndex(realIndex) {
   if (!item) return;
 
   const title = item.title_original || item.title || item.article || 'Без названия';
-  const summary = item.summary || item.abstract || item.description || 'Аннотация отсутствует.';
+  const summary = item.summary_ru || item.summary || item.abstract || item.description || 'Аннотация отсутствует.';
   const category = item.category || item.discipline || 'Другое';
   const authors = normalizeAuthors(item);
   const year = extractYear(item);
