@@ -3,6 +3,9 @@ let filteredData = [];
 let favorites = new Set();
 let showFavOnly = false;
 
+let currentPage = 1;
+const itemsPerPage = 60;
+
 let donutChartInstance = null;
 let lineChartInstance = null;
 
@@ -185,13 +188,14 @@ function populateDropdownFilters() {
 }
 
 function setupEventListeners() {
-  document.getElementById('search-input')?.addEventListener('input', applyFilters);
-  document.getElementById('select-category')?.addEventListener('change', applyFilters);
-  document.getElementById('select-doctype')?.addEventListener('change', applyFilters);
-  document.getElementById('select-country')?.addEventListener('change', applyFilters);
-  document.getElementById('select-language')?.addEventListener('change', applyFilters);
-  document.getElementById('year-from')?.addEventListener('input', applyFilters);
-  document.getElementById('year-to')?.addEventListener('input', applyFilters);
+  document.getElementById('search-input')?.addEventListener('input', () => { currentPage = 1; applyFilters(); });
+  document.getElementById('select-category')?.addEventListener('change', () => { currentPage = 1; applyFilters(); });
+  document.getElementById('select-doctype')?.addEventListener('change', () => { currentPage = 1; applyFilters(); });
+  document.getElementById('select-country')?.addEventListener('change', () => { currentPage = 1; applyFilters(); });
+  document.getElementById('select-language')?.addEventListener('change', () => { currentPage = 1; applyFilters(); });
+  document.getElementById('select-sort')?.addEventListener('change', () => { currentPage = 1; applyFilters(); });
+  document.getElementById('year-from')?.addEventListener('input', () => { currentPage = 1; applyFilters(); });
+  document.getElementById('year-to')?.addEventListener('input', () => { currentPage = 1; applyFilters(); });
 
   document.getElementById('btn-reset')?.addEventListener('click', () => {
     if (document.getElementById('search-input')) document.getElementById('search-input').value = '';
@@ -199,14 +203,16 @@ function setupEventListeners() {
     if (document.getElementById('select-doctype')) document.getElementById('select-doctype').value = 'ALL';
     if (document.getElementById('select-country')) document.getElementById('select-country').value = 'ALL';
     if (document.getElementById('select-language')) document.getElementById('select-language').value = 'ALL';
+    if (document.getElementById('select-sort')) document.getElementById('select-sort').value = 'year-desc';
     if (document.getElementById('year-from')) document.getElementById('year-from').value = '';
     if (document.getElementById('year-to')) document.getElementById('year-to').value = '';
     showFavOnly = false;
     const favBtn = document.getElementById('btn-fav-filter');
     if (favBtn) {
-      favBtn.style.backgroundColor = '#FFFDF9';
-      favBtn.style.color = '#10233F';
+      favBtn.style.backgroundColor = '';
+      favBtn.style.color = '';
     }
+    currentPage = 1;
     applyFilters();
   });
 
@@ -214,9 +220,10 @@ function setupEventListeners() {
     showFavOnly = !showFavOnly;
     const favBtn = document.getElementById('btn-fav-filter');
     if (favBtn) {
-      favBtn.style.backgroundColor = showFavOnly ? '#10233F' : '#FFFDF9';
-      favBtn.style.color = showFavOnly ? '#FFFDF9' : '#10233F';
+      favBtn.style.backgroundColor = showFavOnly ? 'var(--primary-navy)' : '';
+      favBtn.style.color = showFavOnly ? '#FFFDF9' : '';
     }
+    currentPage = 1;
     applyFilters();
   });
 
@@ -234,6 +241,7 @@ function applyFilters() {
   const docTypeVal = document.getElementById('select-doctype')?.value || 'ALL';
   const countryVal = document.getElementById('select-country')?.value || 'ALL';
   const langVal = document.getElementById('select-language')?.value || 'ALL';
+  const sortVal = document.getElementById('select-sort')?.value || 'year-desc';
   const yearFrom = parseInt(document.getElementById('year-from')?.value, 10);
   const yearTo = parseInt(document.getElementById('year-to')?.value, 10);
 
@@ -265,6 +273,18 @@ function applyFilters() {
     return true;
   });
 
+  // Сортировка данных
+  filteredData.sort((a, b) => {
+    if (sortVal === 'year-desc') return extractYear(b) - extractYear(a);
+    if (sortVal === 'year-asc') return extractYear(a) - extractYear(b);
+    if (sortVal === 'title-asc') {
+      const tA = (a.title_original || a.title || '').toLowerCase();
+      const tB = (b.title_original || b.title || '').toLowerCase();
+      return tA.localeCompare(tB);
+    }
+    return 0;
+  });
+
   const currCountElem = document.getElementById('current-count');
   if (currCountElem) currCountElem.innerText = filteredData.length.toLocaleString('ru-RU');
 
@@ -279,15 +299,51 @@ function renderCurrentView() {
   const container = document.getElementById('publications-feed');
   if (!container) return;
 
-  const items = filteredData.slice(0, 60);
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
+  if (currentPage > totalPages) currentPage = totalPages;
+
+  const start = (currentPage - 1) * itemsPerPage;
+  const end = start + itemsPerPage;
+  const items = filteredData.slice(start, end);
 
   if (items.length === 0) {
     container.innerHTML = `<div class="pub-card" style="grid-column: 1 / -1; text-align: center; padding: 3rem;"><p style="color: #666; font-family: serif;">По вашему запросу не найдено исследований.</p></div>`;
+    renderPagination(0);
     return;
   }
 
   container.className = 'cards-grid';
   container.innerHTML = items.map(item => renderGridCardHtml(item)).join('');
+  renderPagination(totalPages);
+}
+
+function renderPagination(totalPages) {
+  const pagContainer = document.getElementById('pagination-container');
+  if (!pagContainer) return;
+
+  if (totalPages <= 1) {
+    pagContainer.innerHTML = '';
+    return;
+  }
+
+  let html = `<button class="page-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})">← Назад</button>`;
+  
+  for (let i = 1; i <= totalPages; i++) {
+    if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+      html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+    } else if (i === currentPage - 3 || i === currentPage + 3) {
+      html += `<span style="padding: 0 4px; color: var(--text-muted);">...</span>`;
+    }
+  }
+
+  html += `<button class="page-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})">Вперед →</button>`;
+  pagContainer.innerHTML = html;
+}
+
+window.changePage = function(page) {
+  currentPage = page;
+  renderCurrentView();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function renderGridCardHtml(item) {
@@ -346,7 +402,6 @@ function renderGridCardHtml(item) {
   `;
 }
 
-// Функция для разворачивания/сворачивания аннотации в карточке
 window.toggleAbstract = function(realIndex, btn) {
   const textElem = document.getElementById(`summary-text-${realIndex}`);
   if (!textElem) return;
@@ -462,7 +517,7 @@ function exportToCSV() {
   const encodedUri = encodeURI(csvContent);
   const link = document.createElement("a");
   link.setAttribute("href", encodedUri);
-  link.setAttribute("download", "olympic_research_data.csv");
+  link.setAttribute("download", showFavOnly ? "olympic_favorites.csv" : "olympic_research_data.csv");
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

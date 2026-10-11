@@ -20,7 +20,7 @@
         </div>
     </header>
 
-    <!-- Компактная и аккуратная панель фильтров -->
+    <!-- Закрепленная панель фильтров -->
     <section class="filters-section">
         <div class="filters-wrapper">
             
@@ -29,7 +29,7 @@
                 <input type="text" id="search-input" placeholder="🔍 Поиск по названию, авторам, аннотации...">
             </div>
 
-            <!-- Строка 2: Все выпадающие списки и кнопки в один красивый ряд -->
+            <!-- Строка 2: Все выпадающие списки, сортировка и кнопки -->
             <div class="controls-row">
                 <select id="select-category">
                     <option value="ALL">Все направления</option>
@@ -45,6 +45,13 @@
 
                 <select id="select-language">
                     <option value="ALL">Все языки</option>
+                </select>
+
+                <!-- Новое: Сортировка -->
+                <select id="select-sort">
+                    <option value="year-desc">Сначала новые (по году)</option>
+                    <option value="year-asc">Сначала старые (по году)</option>
+                    <option value="title-asc">По названию (А–Я)</option>
                 </select>
 
                 <div class="years-box">
@@ -80,10 +87,15 @@
     <!-- Основной двухколоночный макет -->
     <main class="main-container">
         
-        <!-- Левая колонка: Лента исследований (3 колонки внутри) -->
-        <section class="feed-column" id="publications-feed">
-            <!-- Карточки подгружаются динамически -->
-        </section>
+        <!-- Левая колонка: Лента исследований + Пагинация -->
+        <div class="feed-column-wrapper" style="flex: 1;">
+            <section class="feed-column" id="publications-feed">
+                <!-- Карточки подгружаются динамически -->
+            </section>
+            
+            <!-- Контейнер постраничной навигации -->
+            <div id="pagination-container" class="pagination-container"></div>
+        </div>
 
         <!-- Правая колонка: Закрепленный блок аналитики -->
         <aside class="analytics-sidebar">
@@ -112,7 +124,7 @@
     <div id="modal-view" class="modal-overlay">
         <div class="modal-content">
             <button class="modal-close" id="modal-close">✕</button>
-            <h2 id="modal-title">Название исследования</h2>
+            <h2 id="modal-title" class="modal-title">Название исследования</h2>
             <p class="modal-meta"><span id="modal-authors">Авторы</span> (<span id="modal-year">2026</span>)</p>
             <p class="modal-tags">
                 Направление: <strong id="modal-discipline">-</strong> | Тип: <strong id="modal-doctype">-</strong> | Страна: <strong id="modal-country">-</strong>
