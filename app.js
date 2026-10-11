@@ -5,10 +5,11 @@ let showFavOnly = false;
 
 let currentPage = 1;
 const itemsPerPage = 60;
+let currentViewMode = 'grid'; // 'grid' или 'list'
 
 let donutChartInstance = null;
 let lineChartInstance = null;
-let barChartInstance = null; // Инстанс для графика стран
+let barChartInstance = null;
 
 const STANDARD_CATEGORIES = [
   "Олимпийское образование и просвещение",
@@ -198,6 +199,21 @@ function setupEventListeners() {
   document.getElementById('year-from')?.addEventListener('input', () => { currentPage = 1; applyFilters(); });
   document.getElementById('year-to')?.addEventListener('input', () => { currentPage = 1; applyFilters(); });
 
+  // Переключатели вида (Сетка / Список)
+  document.getElementById('btn-view-grid')?.addEventListener('click', () => {
+    currentViewMode = 'grid';
+    document.getElementById('btn-view-grid').classList.add('active');
+    document.getElementById('btn-view-list').classList.remove('active');
+    renderCurrentView();
+  });
+
+  document.getElementById('btn-view-list')?.addEventListener('click', () => {
+    currentViewMode = 'list';
+    document.getElementById('btn-view-list').classList.add('active');
+    document.getElementById('btn-view-grid').classList.remove('active');
+    renderCurrentView();
+  });
+
   document.getElementById('btn-reset')?.addEventListener('click', () => {
     if (document.getElementById('search-input')) document.getElementById('search-input').value = '';
     if (document.getElementById('select-category')) document.getElementById('select-category').value = 'ALL';
@@ -313,7 +329,7 @@ function renderCurrentView() {
     return;
   }
 
-  container.className = 'cards-grid';
+  container.className = currentViewMode === 'list' ? 'cards-list' : 'cards-grid';
   container.innerHTML = items.map(item => renderGridCardHtml(item)).join('');
   renderPagination(totalPages);
 }
@@ -349,7 +365,7 @@ window.changePage = function(page) {
 
 function renderGridCardHtml(item) {
   const title = item.title_original || item.title || 'Научное исследование без названия';
-  const summary = item.summary_ru || item.summary || item.abstract || 'Аннотация отсутствует.';
+  const summary = item.summary_ru || item.abstract_ru || item.summary || item.abstract || item.description || 'Аннотация временно отсутствует в первоисточнике.';
   const category = item.category || 'Олимпийское образование и просвещение';
   const authors = normalizeAuthors(item);
   const year = extractYear(item);
@@ -376,9 +392,9 @@ function renderGridCardHtml(item) {
       <div class="pub-country-row">🌐 ${escapeHtml(country)}</div>
 
       <div class="ai-summary-box">
-        <span style="font-weight: bold; color: var(--primary-navy);">📌 Аннотация:</span> 
-        <span id="summary-text-${realIndex}" class="summary-clamped">${escapeHtml(summary)}</span>
-        <div style="margin-top: 4px; text-align: right;">
+        <div style="font-weight: bold; color: var(--primary-navy); margin-bottom: 2px;">📌 Аннотация:</div> 
+        <div id="summary-text-${realIndex}" class="summary-clamped">${escapeHtml(summary)}</div>
+        <div style="margin-top: 6px; text-align: right;">
           <button onclick="toggleAbstract(${realIndex}, this)" style="background: none; border: none; color: var(--secondary-navy); cursor: pointer; font-size: 10px; font-weight: 600; padding: 0;">Показать полностью ▼</button>
         </div>
       </div>
@@ -448,7 +464,6 @@ function closeModal() {
 function updateCharts(dataset) {
   if (typeof Chart === 'undefined') return;
 
-  // 1. График: Направления олимпизма (Donut)
   const catCounts = {};
   STANDARD_CATEGORIES.forEach(c => catCounts[c] = 0);
   dataset.forEach(item => {
@@ -475,7 +490,6 @@ function updateCharts(dataset) {
     });
   }
 
-  // 2. График: Динамика по годам (Line)
   const yearCounts = {};
   dataset.forEach(item => {
     const y = extractYear(item);
@@ -504,7 +518,6 @@ function updateCharts(dataset) {
     });
   }
 
-  // 3. Шаг 1: График «Ведущие страны» (Horizontal Bar)
   const countryCounts = {};
   dataset.forEach(item => {
     const c = normalizeCountry(item.country);
@@ -513,7 +526,7 @@ function updateCharts(dataset) {
 
   const sortedCountries = Object.entries(countryCounts)
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 5); // Топ-5 стран
+    .slice(0, 5);
 
   const barCtx = document.getElementById('barChart')?.getContext('2d');
   if (barCtx) {
@@ -529,7 +542,7 @@ function updateCharts(dataset) {
         }]
       },
       options: {
-        indexAxis: 'y', // Горизонтальная гистограмма
+        indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
         plugins: { legend: { display: false } },

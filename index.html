@@ -20,7 +20,7 @@
         </div>
     </header>
 
-    <!-- Закрепленная панель фильтров -->
+    <!-- Закрепленная панель фильтров (без сортировки) -->
     <section class="filters-section">
         <div class="filters-wrapper">
             
@@ -29,7 +29,7 @@
                 <input type="text" id="search-input" placeholder="🔍 Поиск по названию, авторам, аннотации...">
             </div>
 
-            <!-- Строка 2: Выпадающие списки и кнопки -->
+            <!-- Строка 2: Выпадающие списки и управляющие кнопки -->
             <div class="controls-row">
                 <select id="select-category">
                     <option value="ALL">Все направления</option>
@@ -45,12 +45,6 @@
 
                 <select id="select-language">
                     <option value="ALL">Все языки</option>
-                </select>
-
-                <select id="select-sort">
-                    <option value="year-desc">Сначала новые (по году)</option>
-                    <option value="year-asc">Сначала старые (по году)</option>
-                    <option value="title-asc">По названию (А–Я)</option>
                 </select>
 
                 <div class="years-box">
@@ -76,7 +70,7 @@
         </div>
     </section>
 
-    <!-- БЛОК АНАЛИТИКИ СВЕРХУ (Горизонтальный ряд из 3 графиков) -->
+    <!-- Компактный и асимметричный блок аналитики сверху -->
     <section class="analytics-top-section">
         <div class="analytics-top-container">
             <div class="analytics-card-horizontal">
@@ -102,14 +96,29 @@
         </div>
     </section>
 
-    <!-- Счетчик результатов по фильтрам -->
-    <div class="results-counter-bar">
-        <div class="counter-badge">
-            🔍 Найдено исследований: <strong id="current-count">0</strong>
+    <!-- Панель управления контентом: Слева сортировка, Справа переключатель видов -->
+    <div class="content-toolbar">
+        <div class="toolbar-left">
+            <label for="select-sort" class="toolbar-label">Сортировка:</label>
+            <select id="select-sort">
+                <option value="year-desc">Сначала новые (по году)</option>
+                <option value="year-asc">Сначала старые (по году)</option>
+                <option value="title-asc">По названию (А–Я)</option>
+            </select>
+            <div class="counter-badge-inline">
+                Найдено: <strong id="current-count">0</strong>
+            </div>
+        </div>
+        <div class="toolbar-right">
+            <div class="view-mode-group">
+                <span class="view-label">Вид:</span>
+                <button id="btn-view-grid" class="view-btn active" title="Сетка карточек">⊞ Сетка</button>
+                <button id="btn-view-list" class="view-btn" title="Компактный список">☰ Список</button>
+            </div>
         </div>
     </div>
 
-    <!-- Основной контейнер (теперь во всю ширину без сайдбара) -->
+    <!-- Основной контейнер для статей -->
     <main class="main-container-full">
         <div class="feed-column-wrapper">
             <section class="feed-column" id="publications-feed">
