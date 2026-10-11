@@ -771,3 +771,75 @@ body {
     right: 15px;
   }
 }
+
+/* Шапка-баннер с изображением */
+.site-header-image-banner {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background-color: #07101E;
+  border-bottom: 3px solid #C59B27;
+}
+
+.header-banner-img {
+  width: 100%;
+  height: auto;
+  min-height: 110px;
+  max-height: 220px;
+  object-fit: cover;
+  object-position: left center;
+  display: block;
+}
+
+.banner-overlay-controls {
+  position: absolute;
+  top: 50%;
+  right: 25px;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 5;
+}
+
+.site-header-image-banner .db-stat-badge {
+  background: rgba(7, 16, 30, 0.85);
+  border: 1px solid rgba(197, 155, 39, 0.6);
+  color: #FFFDF9;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  backdrop-filter: blur(4px);
+}
+
+.site-header-image-banner .vk-badge-link {
+  background: #0077FF;
+  color: #FFFFFF;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 12px rgba(0, 119, 255, 0.4);
+}
+
+.site-header-image-banner .vk-badge-link:hover {
+  background: #005ECC;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .banner-overlay-controls {
+    position: relative;
+    top: 0;
+    right: 0;
+    transform: none;
+    justify-content: center;
+    padding: 10px;
+    background: #07101E;
+  }
+}
