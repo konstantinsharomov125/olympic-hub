@@ -34,7 +34,7 @@ async function loadData() {
   }
 }
 
-// Отрисовка ленты исследований (в исходном стиле)
+// Отрисовка ленты исследований в исходном оформлении
 function renderFeed(items) {
   const feed = document.getElementById('articles-feed');
   if (!feed) return;
@@ -61,27 +61,28 @@ function renderFeed(items) {
     const summary = item.summary_ru || item.summary || item.abstract || 'Аннотация отсутствует.';
     const gostCitation = generateGostCitation(authors, title, year, url);
 
+    // Восстановлена исходная структура карточки под ваш styles.css
     card.innerHTML = `
-      <div class="article-top-row">
+      <div class="article-header">
         <span class="article-category">${escapeHtml(category)}</span>
       </div>
       <div class="article-type">${escapeHtml(type)}</div>
       <h2 class="article-title">${escapeHtml(title)}</h2>
-      <div class="article-meta">
+      <div class="article-meta-info">
         <span class="authors">${escapeHtml(authors)} (${year})</span>
-        <span class="country-badge">🌐 ${escapeHtml(country)}</span>
+        <span class="country-tag">🌐 ${escapeHtml(country)}</span>
       </div>
       <div class="article-abstract">
         <strong>📌 Аннотация:</strong> ${escapeHtml(summary)}
       </div>
-      <div class="gost-section">
-        <div class="gost-label">ГОСТ Р 7.0.100–2018:</div>
+      <div class="gost-block">
+        <div class="gost-title">ГОСТ Р 7.0.100–2018:</div>
         <div class="gost-text" id="gost-${index}">${escapeHtml(gostCitation)}</div>
         <button class="btn-copy" onclick="copyGost('gost-${index}', this)">Копировать цитату</button>
       </div>
-      <div class="card-actions">
-        <button class="btn-read" onclick='openModal(${JSON.stringify(item).replace(/'/g, "&apos;")})'>Читать аннотацию</button>
-        <a href="${escapeHtml(url)}" target="_blank" class="btn-source">Оригинал ↗</a>
+      <div class="card-footer">
+        <button class="btn-read-more" onclick='openModal(${JSON.stringify(item).replace(/'/g, "&apos;")})'>Читать аннотацию</button>
+        <a href="${escapeHtml(url)}" target="_blank" class="btn-original">Оригинал ↗</a>
       </div>
     `;
 
@@ -143,7 +144,7 @@ window.openModal = function(item) {
   modal.style.display = 'flex';
 };
 
-// Рендеринг графиков аналитики
+// Рендеринг графиков аналитики (правая колонка)
 function renderAnalytics(items) {
   const categoriesCount = {};
   const yearsCount = {};
