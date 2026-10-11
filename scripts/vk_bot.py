@@ -11,7 +11,7 @@ from vk_api.utils import get_random_id
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 # Токен сообщества VK (укажите ваш токен или переменную окружения)
-VK_TOKEN = os.getenv("VK_GROUP_TOKEN", "YOUR_VK_GROUP_TOKEN_HERE")
+VK_TOKEN = os.getenv("VK_GROUP_TOKEN", "vk1.a.OAoAC9DyPKatidruuufqJzHasG_AL_pPUfiP_dtHAQeVn9CZArgQ3kBvJD_SVrRuquFJZVaOhs2_SMOplPKiE1xHEVS2KY3WosPz5ITOI0dp1y6Lx8DCHFmx5er4A5AkvJGMjPiwL72o2o3cnOFsuIJS5hyemskeNPGJljMeF0mWyFUvN-ALsrxIknfc94kyF1Ip7m2xvVEA7rK5c5wkyw")
 
 # Поиск базы данных web_data.json
 DATA_PATHS = [
