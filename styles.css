@@ -1,20 +1,27 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Literata:wght@500;600;700&display=swap');
+/* =========================================================
+   ОЛИМПИЙСКИЙ ИССЛЕДОВАТЕЛЬСКИЙ ПОРТАЛ
+   Полный профессиональный стиль (styles.css)
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;0,7..72,700;1,7..72,400&display=swap');
 
 :root {
-  --bg-main: #F7F4ED;
-  --bg-card: #FFFDF9;
-  --primary-navy: #10233F;
-  --secondary-navy: #29496B;
-  --accent-gold: #B38A4B;
-  --text-main: #1D2939;
-  --text-muted: #697586;
-  --border-subtle: #E4DED2;
-  --bg-tag: #F0ECE3;
+  --bg-main: #F7F4ED;         /* Тёплый цвет слоновой кости */
+  --bg-card: #FFFDF9;         /* Пергаментный беж карточек */
+  --primary-navy: #10233F;    /* Глубокий академический синий */
+  --secondary-navy: #29496B;  /* Чернильно-синий акцент */
+  --accent-gold: #B38A4B;     /* Приглушённое латунное золото */
+  --text-main: #1D2939;       /* Тёмно-угольный основной текст */
+  --text-muted: #697586;      /* Графитовый вторичный текст */
+  --border-subtle: #E4DED2;   /* Тонкие книжные границы */
+  --bg-tag: #F0ECE3;          /* Светлый архивный фон тегов */
+
+  /* Типографика */
   --font-serif: 'Literata', Georgia, serif;
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-* {
+*, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -26,11 +33,12 @@ body {
   font-family: var(--font-sans);
   font-size: 13px;
   line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
   background-image: radial-gradient(#E4DED2 0.75px, transparent 0.75px);
   background-size: 24px 24px;
 }
 
-/* Шапка сайта */
+/* 1. ШАПКА ПОРТАЛА */
 .site-header {
   background-color: var(--primary-navy);
   color: #FFFDF9;
@@ -50,6 +58,7 @@ body {
   padding: 4px 10px;
   border-radius: 20px;
   color: #E4DED2;
+  letter-spacing: 0.3px;
 }
 
 .logo-area {
@@ -70,9 +79,10 @@ body {
   font-weight: 600;
   color: #FFFDF9;
   margin: 0;
+  letter-spacing: 0.3px;
 }
 
-/* Фильтры */
+/* 2. ПАНЕЛЬ ФИЛЬТРОВ И ПОИСКА */
 .filters-section {
   background: var(--bg-card);
   border-bottom: 1px solid var(--border-subtle);
@@ -97,10 +107,12 @@ body {
   border-radius: 6px;
   font-size: 13px;
   color: var(--text-main);
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
-.search-row input:focus {
+.search-row input:focus, 
+.controls-row select:focus, 
+.years-box input:focus {
   outline: none;
   border-color: var(--accent-gold);
   background: #fff;
@@ -141,16 +153,12 @@ body {
 }
 
 .years-box input {
-  width: 55px;
+  width: 50px;
   border: none;
   background: transparent;
   font-size: 12px;
   text-align: center;
   color: var(--text-main);
-}
-
-.years-box input:focus {
-  outline: none;
 }
 
 .btn-filter-fav {
@@ -180,6 +188,7 @@ body {
   border-radius: 6px;
   font-size: 12px;
   cursor: pointer;
+  transition: border-color 0.2s;
 }
 
 .btn-filter-reset:hover {
@@ -196,6 +205,11 @@ body {
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-filter-csv:hover {
+  opacity: 0.9;
 }
 
 .results-counter-bar {
@@ -219,13 +233,13 @@ body {
   color: var(--primary-navy);
 }
 
-/* ГЛАВНЫЙ ДВУХКОЛОНОЧНЫЙ МАКЕТ */
+/* 3. ГЛАВНЫЙ ДВУХКОЛОНОЧНЫЙ МАКЕТ */
 .main-container {
   max-width: 1400px;
   margin: 15px auto 40px auto;
   padding: 0 25px;
   display: grid;
-  grid-template-columns: 1fr 320px; /* Фиксируем ширину аналитики справа */
+  grid-template-columns: 1fr 320px;
   gap: 20px;
   align-items: start;
 }
@@ -240,7 +254,7 @@ body {
   gap: 16px;
 }
 
-/* Карточки с эффектами при наведении */
+/* 4. КАРТОЧКИ ИССЛЕДОВАНИЙ С ЭФФЕКТАМИ */
 .pub-card {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
@@ -255,8 +269,8 @@ body {
 }
 
 .pub-card:hover {
-  transform: translateY(-4px); /* Подъем карточки при наведении */
-  box-shadow: 0 8px 20px rgba(16, 35, 63, 0.1); /* Плавная тень */
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(16, 35, 63, 0.1);
   border-top-color: var(--accent-gold);
 }
 
@@ -312,6 +326,7 @@ body {
   margin-bottom: 8px;
 }
 
+/* Стили аннотации со сведением до 3 строк */
 .ai-summary-box {
   margin: 6px 0;
   padding: 8px 10px;
@@ -321,6 +336,14 @@ body {
   font-size: 11px;
   color: var(--text-main);
   line-height: 1.4;
+}
+
+.summary-clamped {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .gost-citation-box {
@@ -378,6 +401,7 @@ body {
   color: var(--primary-navy);
   text-decoration: none;
   font-weight: 600;
+  transition: color 0.2s;
 }
 
 .btn-link-original:hover {
@@ -385,7 +409,7 @@ body {
   text-decoration: underline;
 }
 
-/* ПРАВАЯ КОЛОНКА АНАЛИТИКИ (ЗАКРЕПЛЕНА) */
+/* 5. ПРАВАЯ КОЛОНКА АНАЛИТИКИ (ЗАКРЕПЛЕНА) */
 .analytics-sidebar {
   width: 320px;
 }
@@ -398,7 +422,7 @@ body {
   padding: 16px;
   box-shadow: 0 2px 8px rgba(16, 35, 63, 0.03);
   position: sticky;
-  top: 15px; /* Блок красиво липнет при прокрутке */
+  top: 15px;
 }
 
 .analytics-card h3 {
@@ -408,6 +432,7 @@ body {
   margin-bottom: 12px;
   border-bottom: 2px solid var(--accent-gold);
   padding-bottom: 4px;
+  letter-spacing: 0.3px;
 }
 
 .chart-block {
@@ -425,7 +450,7 @@ body {
   height: 180px;
 }
 
-/* Модальное окно */
+/* 6. МОДАЛЬНОЕ ОКНО */
 .modal-overlay {
   display: none;
   position: fixed;
@@ -447,20 +472,95 @@ body {
   overflow-y: auto;
   border-top: 4px solid var(--accent-gold);
   position: relative;
+  box-shadow: 0 15px 40px rgba(16, 35, 63, 0.25);
 }
 
 .modal-close {
   position: absolute;
   top: 12px;
   right: 12px;
-  background: none;
+  background: #F0ECE3;
   border: none;
-  font-size: 18px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 14px;
   cursor: pointer;
-  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-main);
+  transition: background 0.2s;
 }
 
-/* Адаптивность */
+.modal-close:hover {
+  background: #E4DED2;
+}
+
+.modal-title {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  color: var(--primary-navy);
+  margin-bottom: 8px;
+  line-height: 1.35;
+}
+
+.modal-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.modal-tags {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.modal-body h4 {
+  font-size: 12px;
+  color: var(--primary-navy);
+  margin-bottom: 4px;
+  margin-top: 12px;
+}
+
+.modal-body p {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-main);
+}
+
+.gost-modal-text {
+  font-style: italic;
+  background: var(--bg-main);
+  padding: 8px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--border-subtle);
+  font-size: 11px;
+  font-family: monospace;
+}
+
+.modal-footer {
+  margin-top: 16px;
+  text-align: right;
+}
+
+.btn-primary-link {
+  background: var(--primary-navy);
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 11.5px;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.btn-primary-link:hover {
+  background: var(--secondary-navy);
+}
+
+/* 7. АДАПТИВНОСТЬ */
 @media (max-width: 1100px) {
   .main-container {
     grid-template-columns: 1fr;

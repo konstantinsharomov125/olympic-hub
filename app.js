@@ -305,42 +305,60 @@ function renderGridCardHtml(item) {
   const gostCitationText = generateGostCitation(item);
 
   return `
-    <article class="pub-card" style="background: #FFFDF9; border: 1px solid #E4DED2; border-radius: 6px; padding: 18px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
-      <div class="pub-badge-group" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-        <span class="badge-cat" style="font-size: 10px; background: #10233F; color: #FFFDF9; padding: 3px 8px; border-radius: 3px; font-weight: 600;">${escapeHtml(category)}</span>
-        <button style="background:none; border:none; cursor:pointer; font-size:1.2rem; color:${isFav ? '#B38A4B' : '#ccc'};" onclick="toggleFavorite(${realIndex})" title="В избранное">★</button>
+    <article class="pub-card">
+      <div class="pub-badge-group">
+        <span class="badge-cat">${escapeHtml(category)}</span>
+        <button style="background:none; border:none; cursor:pointer; font-size:1.2rem; color:${isFav ? 'var(--accent-gold)' : '#ccc'};" onclick="toggleFavorite(${realIndex})" title="В избранное">★</button>
       </div>
       
-      <span class="badge-type" style="font-size: 11px; color: #697586; display: block; margin-bottom: 6px;">${escapeHtml(docType)}</span>
+      <span class="badge-type">${escapeHtml(docType)}</span>
       
-      <h3 class="pub-card-title" style="font-size: 15px; color: #10233F; margin-bottom: 8px; cursor: pointer;" onclick="openModalByItemIndex(${realIndex})">${escapeHtml(title)}</h3>
+      <h3 class="pub-card-title" onclick="openModalByItemIndex(${realIndex})">${escapeHtml(title)}</h3>
       
-      <div class="pub-author-row" style="font-size: 12px; color: #333; margin-bottom: 4px;">${escapeHtml(authors)} (${year})</div>
-      <div class="pub-country-row" style="font-size: 12px; color: #697586; margin-bottom: 8px;">🌐 ${escapeHtml(country)}</div>
+      <div class="pub-author-row">${escapeHtml(authors)} (${year})</div>
+      <div class="pub-country-row">🌐 ${escapeHtml(country)}</div>
 
-      <div class="ai-summary-box" style="margin-top: 8px; margin-bottom: 8px; padding: 8px 10px; background: #f0f4f8; border-left: 3px solid #10233F; border-radius: 4px; font-size: 11px; color: #1a202c;">
-        <span style="font-weight: bold; color: #10233F;">📌 Аннотация:</span> ${escapeHtml(summary)}
+      <div class="ai-summary-box">
+        <span style="font-weight: bold; color: var(--primary-navy);">📌 Аннотация:</span> 
+        <span id="summary-text-${realIndex}" class="summary-clamped">${escapeHtml(summary)}</span>
+        <div style="margin-top: 4px; text-align: right;">
+          <button onclick="toggleAbstract(${realIndex}, this)" style="background: none; border: none; color: var(--secondary-navy); cursor: pointer; font-size: 10px; font-weight: 600; padding: 0;">Показать полностью ▼</button>
+        </div>
       </div>
 
-      <div class="gost-citation-box" style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 6px; border: 1px solid #e9ecef; font-size: 11px; color: #333;">
-        <div style="font-weight: bold; margin-bottom: 3px; color: #555;">📋 ГОСТ Р 7.0.100-2018:</div>
-        <div style="margin-bottom: 6px; font-style: italic; line-height: 1.3;">${escapeHtml(gostCitationText)}</div>
-        <button onclick="copyGostCitation(this, ${realIndex})" style="background: #007bff; color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 11px;">
+      <div class="gost-citation-box">
+        <div style="font-weight: bold; margin-bottom: 3px; color: var(--primary-navy);">📋 ГОСТ Р 7.0.100-2018:</div>
+        <div style="margin-bottom: 5px; font-style: italic; line-height: 1.3;">${escapeHtml(gostCitationText)}</div>
+        <button onclick="copyGostCitation(this, ${realIndex})">
           📋 Копировать цитату
         </button>
       </div>
 
-      <div class="pub-card-footer" style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
-        <button class="btn-card-action" onclick="openModalByItemIndex(${realIndex})" style="background: #10233F; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11px;">
+      <div class="pub-card-footer">
+        <button class="btn-card-action" onclick="openModalByItemIndex(${realIndex})">
           Читать аннотацию
         </button>
-        <a href="${originalUrl}" target="_blank" style="font-size: 11px; color: #10233F; text-decoration: none; font-weight: 600;">
+        <a href="${originalUrl}" target="_blank" class="btn-link-original">
           Оригинал ↗
         </a>
       </div>
     </article>
   `;
 }
+
+// Функция для разворачивания/сворачивания аннотации в карточке
+window.toggleAbstract = function(realIndex, btn) {
+  const textElem = document.getElementById(`summary-text-${realIndex}`);
+  if (!textElem) return;
+
+  if (textElem.classList.contains('summary-clamped')) {
+    textElem.classList.remove('summary-clamped');
+    btn.innerText = 'Свернуть ▲';
+  } else {
+    textElem.classList.add('summary-clamped');
+    btn.innerText = 'Показать полностью ▼';
+  }
+};
 
 window.toggleFavorite = function(index) {
   if (favorites.has(index)) favorites.delete(index);
