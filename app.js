@@ -26,7 +26,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadDataset();
   populateDropdownFilters();
   setupEventListeners();
-  setupAdminPanel();
   applyFilters();
 });
 
@@ -52,10 +51,8 @@ async function loadDataset() {
 
   if (!loaded) {
     console.error("❌ Не удалось загрузить базу данных web_data.json");
-    const container = document.getElementById('publications-feed') || document.getElementById('articles-feed');
-    if (container) {
-      container.innerHTML = `<div class="pub-card" style="grid-column:1/-1;"><p style="color:red;">❌ Ошибка: Не найден файл web_data.json</p></div>`;
-    }
+    document.getElementById('publications-feed').innerHTML = 
+      `<div class="pub-card" style="grid-column:1/-1;"><p style="color:red;">❌ Ошибка: Не найден файл web_data.json</p></div>`;
   }
 }
 
@@ -119,7 +116,7 @@ function extractYear(item) {
   let titleMatch = (item.title_original || item.title || item.article || '').match(/\b(18\d{2}|19\d{2}|20\d{2})\b/);
   if (titleMatch) return parseInt(titleMatch[1], 10);
 
-  return 2026;
+  return 2020;
 }
 
 function getOriginalUrl(item) {
@@ -165,7 +162,7 @@ function generateGostCitation(item) {
 }
 
 // Копирование цитаты в буфер обмена
-window.copyGostCitation = function(buttonElement, realIndex) {
+function copyGostCitation(buttonElement, realIndex) {
     const item = rawData[realIndex];
     if (!item) return;
     
@@ -182,7 +179,7 @@ window.copyGostCitation = function(buttonElement, realIndex) {
         console.error("Ошибка копирования: ", err);
         alert("Не удалось скопировать в буфер обмена.");
     });
-};
+}
 
 // Заполнение выпадающих списков
 function populateDropdownFilters() {
@@ -191,117 +188,81 @@ function populateDropdownFilters() {
   const selectCountry = document.getElementById('select-country');
   const selectLang = document.getElementById('select-language');
 
-  if (selectCat) {
-    selectCat.innerHTML = `<option value="ALL">Все направления</option>`;
-    STANDARD_CATEGORIES.forEach(cat => {
-      const opt = document.createElement('option');
-      opt.value = cat;
-      opt.textContent = cat;
-      selectCat.appendChild(opt);
-    });
-  }
+  selectCat.innerHTML = `<option value="ALL">Все направления</option>`;
+  STANDARD_CATEGORIES.forEach(cat => {
+    const opt = document.createElement('option');
+    opt.value = cat;
+    opt.textContent = cat;
+    selectCat.appendChild(opt);
+  });
 
-  if (selectDocType) {
-    selectDocType.innerHTML = `<option value="ALL">Все типы документов</option>`;
-    const docTypes = ['Научная статья', 'Обзорная статья', 'Монография', 'Диссертация', 'Учебное пособие', 'Материалы конференции'];
-    docTypes.forEach(type => {
-      const opt = document.createElement('option');
-      opt.value = type;
-      opt.textContent = type;
-      selectDocType.appendChild(opt);
-    });
-  }
+  selectDocType.innerHTML = `<option value="ALL">Все типы документов</option>`;
+  const docTypes = ['Научная статья', 'Обзорная статья', 'Монография', 'Диссертация', 'Учебное пособие', 'Материалы конференции'];
+  docTypes.forEach(type => {
+    const opt = document.createElement('option');
+    opt.value = type;
+    opt.textContent = type;
+    selectDocType.appendChild(opt);
+  });
 
-  if (selectCountry) {
-    selectCountry.innerHTML = `<option value="ALL">Все страны</option>`;
-    const countries = ['Россия', 'США', 'Китай', 'Германия', 'Франция', 'Великобритания', 'Япония', 'Другие страны'];
-    countries.forEach(country => {
-      const opt = document.createElement('option');
-      opt.value = country;
-      opt.textContent = country;
-      selectCountry.appendChild(opt);
-    });
-  }
+  selectCountry.innerHTML = `<option value="ALL">Все страны</option>`;
+  const countries = ['Россия', 'США', 'Китай', 'Германия', 'Франция', 'Великобритания', 'Япония', 'Другие страны'];
+  countries.forEach(country => {
+    const opt = document.createElement('option');
+    opt.value = country;
+    opt.textContent = country;
+    selectCountry.appendChild(opt);
+  });
 
-  if (selectLang) {
-    selectLang.innerHTML = `<option value="ALL">Все языки</option>`;
-    const languages = ['Русский', 'Английский', 'Немецкий', 'Французский', 'Испанский', 'Другой язык'];
-    languages.forEach(lang => {
-      const opt = document.createElement('option');
-      opt.value = lang;
-      opt.textContent = lang;
-      selectLang.appendChild(opt);
-    });
-  }
+  selectLang.innerHTML = `<option value="ALL">Все языки</option>`;
+  const languages = ['Русский', 'Английский', 'Немецкий', 'Французский', 'Испанский', 'Другой язык'];
+  languages.forEach(lang => {
+    const opt = document.createElement('option');
+    opt.value = lang;
+    opt.textContent = lang;
+    selectLang.appendChild(opt);
+  });
 }
 
 function setupEventListeners() {
-  const searchInput = document.getElementById('search-input');
-  if (searchInput) searchInput.addEventListener('input', applyFilters);
+  document.getElementById('search-input').addEventListener('input', applyFilters);
+  document.getElementById('select-category').addEventListener('change', applyFilters);
+  document.getElementById('select-doctype').addEventListener('change', applyFilters);
+  document.getElementById('select-country').addEventListener('change', applyFilters);
+  document.getElementById('select-language').addEventListener('change', applyFilters);
+  document.getElementById('year-from').addEventListener('input', applyFilters);
+  document.getElementById('year-to').addEventListener('input', applyFilters);
 
-  const selectCat = document.getElementById('select-category');
-  if (selectCat) selectCat.addEventListener('change', applyFilters);
+  document.getElementById('btn-reset').addEventListener('click', () => {
+    document.getElementById('search-input').value = '';
+    document.getElementById('select-category').value = 'ALL';
+    document.getElementById('select-doctype').value = 'ALL';
+    document.getElementById('select-country').value = 'ALL';
+    document.getElementById('select-language').value = 'ALL';
+    document.getElementById('year-from').value = '';
+    document.getElementById('year-to').value = '';
+    showFavOnly = false;
+    document.getElementById('btn-fav-filter').style.backgroundColor = 'var(--bg-main)';
+    document.getElementById('btn-fav-filter').style.color = 'var(--primary-navy)';
+    applyFilters();
+  });
 
-  const selectDocType = document.getElementById('select-doctype');
-  if (selectDocType) selectDocType.addEventListener('change', applyFilters);
+  document.getElementById('btn-fav-filter').addEventListener('click', () => {
+    showFavOnly = !showFavOnly;
+    document.getElementById('btn-fav-filter').style.backgroundColor = showFavOnly ? 'var(--accent-gold)' : 'var(--bg-main)';
+    document.getElementById('btn-fav-filter').style.color = showFavOnly ? '#FFFDF9' : 'var(--primary-navy)';
+    applyFilters();
+  });
 
-  const selectCountry = document.getElementById('select-country');
-  if (selectCountry) selectCountry.addEventListener('change', applyFilters);
+  document.getElementById('btn-export-csv').addEventListener('click', exportToCSV);
 
-  const selectLang = document.getElementById('select-language');
-  if (selectLang) selectLang.addEventListener('change', applyFilters);
-
-  const yearFrom = document.getElementById('year-from');
-  if (yearFrom) yearFrom.addEventListener('input', applyFilters);
-
-  const yearTo = document.getElementById('year-to');
-  if (yearTo) yearTo.addEventListener('input', applyFilters);
-
-  const btnReset = document.getElementById('btn-reset');
-  if (btnReset) {
-    btnReset.addEventListener('click', () => {
-      if (document.getElementById('search-input')) document.getElementById('search-input').value = '';
-      if (document.getElementById('select-category')) document.getElementById('select-category').value = 'ALL';
-      if (document.getElementById('select-doctype')) document.getElementById('select-doctype').value = 'ALL';
-      if (document.getElementById('select-country')) document.getElementById('select-country').value = 'ALL';
-      if (document.getElementById('select-language')) document.getElementById('select-language').value = 'ALL';
-      if (document.getElementById('year-from')) document.getElementById('year-from').value = '';
-      if (document.getElementById('year-to')) document.getElementById('year-to').value = '';
-      showFavOnly = false;
-      const favBtn = document.getElementById('btn-fav-filter');
-      if (favBtn) {
-        favBtn.style.backgroundColor = 'var(--bg-main)';
-        favBtn.style.color = 'var(--primary-navy)';
-      }
-      applyFilters();
-    });
-  }
-
-  const btnFavFilter = document.getElementById('btn-fav-filter');
-  if (btnFavFilter) {
-    btnFavFilter.addEventListener('click', () => {
-      showFavOnly = !showFavOnly;
-      btnFavFilter.style.backgroundColor = showFavOnly ? 'var(--accent-gold)' : 'var(--bg-main)';
-      btnFavFilter.style.color = showFavOnly ? '#FFFDF9' : 'var(--primary-navy)';
-      applyFilters();
-    });
-  }
-
-  const exportCsvBtn = document.getElementById('btn-export-csv');
-  if (exportCsvBtn) exportCsvBtn.addEventListener('click', exportToCSV);
-
-  const modalClose = document.getElementById('modal-close');
-  if (modalClose) modalClose.addEventListener('click', closeModal);
-
-  const modalView = document.getElementById('modal-view');
-  if (modalView) {
-    modalView.addEventListener('click', (e) => {
-      if (e.target.id === 'modal-view') closeModal();
-    });
-  }
+  document.getElementById('modal-close').addEventListener('click', closeModal);
+  document.getElementById('modal-view').addEventListener('click', (e) => {
+    if (e.target.id === 'modal-view') closeModal();
+  });
 }
 
-window.changeViewMode = function(mode) {
+function changeViewMode(mode) {
   currentViewMode = mode;
   document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
   document.getElementById(`btn-view-${mode}`)?.classList.add('active');
@@ -309,13 +270,13 @@ window.changeViewMode = function(mode) {
 }
 
 function applyFilters() {
-  const searchVal = document.getElementById('search-input') ? document.getElementById('search-input').value.toLowerCase().trim() : '';
-  const catVal = document.getElementById('select-category') ? document.getElementById('select-category').value : 'ALL';
-  const docTypeVal = document.getElementById('select-doctype') ? document.getElementById('select-doctype').value : 'ALL';
-  const countryVal = document.getElementById('select-country') ? document.getElementById('select-country').value : 'ALL';
-  const langVal = document.getElementById('select-language') ? document.getElementById('select-language').value : 'ALL';
-  const yearFrom = parseInt(document.getElementById('year-from')?.value, 10);
-  const yearTo = parseInt(document.getElementById('year-to')?.value, 10);
+  const searchVal = document.getElementById('search-input').value.toLowerCase().trim();
+  const catVal = document.getElementById('select-category').value;
+  const docTypeVal = document.getElementById('select-doctype').value;
+  const countryVal = document.getElementById('select-country').value;
+  const langVal = document.getElementById('select-language').value;
+  const yearFrom = parseInt(document.getElementById('year-from').value, 10);
+  const yearTo = parseInt(document.getElementById('year-to').value, 10);
 
   filteredData = rawData.filter((item, idx) => {
     if (showFavOnly && !favorites.has(idx)) return false;
@@ -345,23 +306,16 @@ function applyFilters() {
     return true;
   });
 
-  const currCountElem = document.getElementById('current-count');
-  if (currCountElem) currCountElem.innerText = filteredData.length.toLocaleString('ru-RU');
-
-  const headerStatElem = document.getElementById('header-stat-count') || document.querySelector('#db-counter span');
-  if (headerStatElem) headerStatElem.innerText = rawData.length.toLocaleString('ru-RU');
-
-  const metricTotal = document.getElementById('metric-total-val');
-  if (metricTotal) metricTotal.innerText = rawData.length.toLocaleString('ru-RU');
+  document.getElementById('current-count').innerText = filteredData.length.toLocaleString('ru-RU');
+  document.getElementById('header-stat-count').innerText = rawData.length.toLocaleString('ru-RU');
+  document.getElementById('metric-total-val').innerText = rawData.length.toLocaleString('ru-RU');
 
   renderCurrentView();
   updateCharts(filteredData);
 }
 
 function renderCurrentView() {
-  const container = document.getElementById('publications-feed') || document.getElementById('articles-feed');
-  if (!container) return;
-
+  const container = document.getElementById('publications-feed');
   const items = filteredData.slice(0, 60);
 
   if (items.length === 0) {
@@ -373,22 +327,25 @@ function renderCurrentView() {
     return;
   }
 
-  if (currentViewMode === 'grid' || currentViewMode === 'list') {
-    container.className = currentViewMode === 'grid' ? 'cards-grid' : 'cards-list';
+  if (currentViewMode === 'grid') {
+    container.className = 'cards-grid';
+    container.innerHTML = items.map(item => renderGridCardHtml(item)).join('');
+  } else if (currentViewMode === 'list') {
+    container.className = 'cards-list';
     container.innerHTML = items.map(item => renderGridCardHtml(item)).join('');
   } else if (currentViewMode === 'table') {
     container.className = 'table-view-container';
     container.innerHTML = `
-      <table class="academic-table" style="width: 100%; border-collapse: collapse; background: #fff; font-size: 12px;">
+      <table class="academic-table">
         <thead>
-          <tr style="background: #10233F; color: #fff; text-align: left;">
-            <th style="padding: 10px;">Заглавие исследования</th>
-            <th style="padding: 10px;">Авторы</th>
-            <th style="padding: 10px;">Год</th>
-            <th style="padding: 10px;">Направление</th>
-            <th style="padding: 10px;">Тип</th>
-            <th style="padding: 10px;">Страна</th>
-            <th style="padding: 10px;">Ссылка</th>
+          <tr>
+            <th>Заглавие исследования</th>
+            <th>Авторы</th>
+            <th>Год</th>
+            <th>Направление</th>
+            <th>Тип</th>
+            <th>Страна</th>
+            <th>Ссылка</th>
           </tr>
         </thead>
         <tbody>
@@ -414,20 +371,20 @@ function renderGridCardHtml(item) {
   const gostCitationText = generateGostCitation(item);
 
   return `
-    <article class="pub-card" style="background: #FFFDF9; border: 1px solid #E4DED2; border-radius: 6px; padding: 18px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
-      <div class="pub-badge-group" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-        <span class="badge-cat" style="font-size: 10px; background: #10233F; color: #FFFDF9; padding: 3px 8px; border-radius: 3px; font-weight: 600; text-transform: uppercase;">${escapeHtml(category)}</span>
-        <button style="background:none; border:none; cursor:pointer; font-size:1.2rem; color:${isFav ? 'var(--accent-gold)' : '#ccc'};" onclick="toggleFavorite(${realIndex})" title="В избранное">
+    <article class="pub-card">
+      <div class="pub-badge-group">
+        <span class="badge-cat">${category}</span>
+        <button style="background:none; border:none; cursor:pointer; font-size:1.1rem; color:${isFav ? 'var(--accent-gold)' : '#ccc'};" onclick="toggleFavorite(${realIndex})">
           ★
         </button>
       </div>
       
-      <span class="badge-type" style="font-size: 11px; color: #697586; display: block; margin-bottom: 6px;">${escapeHtml(docType)}</span>
+      <span class="badge-type">${docType}</span>
       
-      <h3 class="pub-card-title" style="font-size: 15px; font-family: var(--font-serif); color: #10233F; margin-bottom: 8px; cursor: pointer;" onclick="openModalByItemIndex(${realIndex})">${escapeHtml(title)}</h3>
+      <h3 class="pub-card-title" onclick="openModalByItemIndex(${realIndex})">${escapeHtml(title)}</h3>
       
-      <div class="pub-author-row" style="font-size: 12px; color: #333; margin-bottom: 4px;">${escapeHtml(authors)} (${year})</div>
-      <div class="pub-country-row" style="font-size: 12px; color: #697586; margin-bottom: 8px;">🌐 ${escapeHtml(country)}</div>
+      <div class="pub-author-row">${escapeHtml(authors)} (${year})</div>
+      <div class="pub-country-row">🌐 ${escapeHtml(country)}</div>
 
       <div class="ai-summary-box" style="margin-top: 8px; margin-bottom: 8px; padding: 8px 10px; background: #f0f4f8; border-left: 3px solid #10233F; border-radius: 4px; font-size: 11px; color: #1a202c;">
         <span style="font-weight: bold; color: #10233F;">📌 Аннотация:</span> ${escapeHtml(summary)}
@@ -435,17 +392,17 @@ function renderGridCardHtml(item) {
 
       <div class="gost-citation-box" style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 6px; border: 1px solid #e9ecef; font-size: 11px; color: #333;">
         <div style="font-weight: bold; margin-bottom: 3px; color: #555;">📋 ГОСТ Р 7.0.100-2018:</div>
-        <div style="margin-bottom: 6px; font-style: italic; line-height: 1.3;" id="gost-${realIndex}">${escapeHtml(gostCitationText)}</div>
+        <div style="margin-bottom: 6px; font-style: italic; line-height: 1.3;">${escapeHtml(gostCitationText)}</div>
         <button onclick="copyGostCitation(this, ${realIndex})" style="background: #007bff; color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 500;">
           📋 Копировать цитату
         </button>
       </div>
 
-      <div class="pub-card-footer" style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
-        <button class="btn-card-action" onclick="openModalByItemIndex(${realIndex})" style="background: #10233F; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11px;">
+      <div class="pub-card-footer" style="margin-top: 10px;">
+        <button class="btn-card-action" onclick="openModalByItemIndex(${realIndex})">
           Читать аннотацию
         </button>
-        <a href="${originalUrl}" target="_blank" class="btn-link-original" style="font-size: 11px; color: #10233F; text-decoration: none; font-weight: 600;">
+        <a href="${originalUrl}" target="_blank" class="btn-link-original">
           Оригинал ↗
         </a>
       </div>
@@ -464,30 +421,29 @@ function renderTableRowHtml(item) {
   const realIndex = rawData.indexOf(item);
 
   return `
-    <tr style="border-bottom: 1px solid #E4DED2;">
-      <td style="padding: 8px;"><strong style="cursor:pointer; color:#10233F;" onclick="openModalByItemIndex(${realIndex})">${escapeHtml(title)}</strong></td>
-      <td style="padding: 8px;">${escapeHtml(authors)}</td>
-      <td style="padding: 8px;">${year}</td>
-      <td style="padding: 8px;"><span style="font-size:10px; background:#10233F; color:#fff; padding:2px 6px; border-radius:3px;">${escapeHtml(category)}</span></td>
-      <td style="padding: 8px;">${docType}</td>
-      <td style="padding: 8px;">${escapeHtml(country)}</td>
-      <td style="padding: 8px;"><a href="${originalUrl}" target="_blank" style="color:#007bff; text-decoration:none;">Открыть ↗</a></td>
+    <tr>
+      <td><strong style="cursor:pointer; color:var(--primary-navy);" onclick="openModalByItemIndex(${realIndex})">${escapeHtml(title)}</strong></td>
+      <td>${escapeHtml(authors)}</td>
+      <td>${year}</td>
+      <td><span class="badge-cat" style="font-size:0.65rem;">${category}</span></td>
+      <td>${docType}</td>
+      <td>${escapeHtml(country)}</td>
+      <td><a href="${originalUrl}" target="_blank" class="btn-link-original">Открыть ↗</a></td>
     </tr>
   `;
 }
 
-window.toggleFavorite = function(index) {
+function toggleFavorite(index) {
   if (favorites.has(index)) {
     favorites.delete(index);
   } else {
     favorites.add(index);
   }
-  const favCountElem = document.getElementById('fav-count');
-  if (favCountElem) favCountElem.innerText = favorites.size;
+  document.getElementById('fav-count').innerText = favorites.size;
   applyFilters();
 }
 
-window.openModalByItemIndex = function(realIndex) {
+function openModalByItemIndex(realIndex) {
   const item = rawData[realIndex];
   if (!item) return;
 
@@ -500,27 +456,24 @@ window.openModalByItemIndex = function(realIndex) {
   const country = normalizeCountry(item.country || item.country_name);
   const originalUrl = getOriginalUrl(item);
 
-  if (document.getElementById('modal-title')) document.getElementById('modal-title').innerText = title;
-  if (document.getElementById('modal-discipline')) document.getElementById('modal-discipline').innerText = category;
-  if (document.getElementById('modal-authors')) document.getElementById('modal-authors').innerText = authors;
-  if (document.getElementById('modal-year')) document.getElementById('modal-year').innerText = year;
-  if (document.getElementById('modal-doctype')) document.getElementById('modal-doctype').innerText = docType;
-  if (document.getElementById('modal-country')) document.getElementById('modal-country').innerText = country;
-  if (document.getElementById('modal-abstract')) document.getElementById('modal-abstract').innerText = summary;
+  document.getElementById('modal-title').innerText = title;
+  document.getElementById('modal-discipline').innerText = category;
+  document.getElementById('modal-authors').innerText = authors;
+  document.getElementById('modal-year').innerText = year;
+  document.getElementById('modal-doctype').innerText = docType;
+  document.getElementById('modal-country').innerText = country;
+  document.getElementById('modal-abstract').innerText = summary;
   
   const linkElem = document.getElementById('modal-original-link');
-  if (linkElem) linkElem.href = originalUrl;
+  linkElem.href = originalUrl;
 
-  const citationElem = document.getElementById('modal-citation');
-  if (citationElem) citationElem.innerText = generateGostCitation(item);
+  document.getElementById('modal-citation').innerText = generateGostCitation(item);
 
-  const modalView = document.getElementById('modal-view');
-  if (modalView) modalView.classList.add('active');
+  document.getElementById('modal-view').classList.add('active');
 }
 
 function closeModal() {
-  const modalView = document.getElementById('modal-view');
-  if (modalView) modalView.classList.remove('active');
+  document.getElementById('modal-view').classList.remove('active');
 }
 
 function updateCharts(dataset) {
@@ -637,89 +590,7 @@ function exportToCSV() {
   document.body.removeChild(link);
 }
 
-// ВСТРОЕННАЯ ПАНЕЛЬ АДМИНИСТРАТОРА
-function setupAdminPanel() {
-  const adminModal = document.getElementById('admin-modal');
-  const btnOpen = document.getElementById('btn-admin-open');
-  const btnCloseAuth = document.getElementById('admin-close-auth');
-  const btnClosePanel = document.getElementById('admin-panel-close');
-  const loginBtn = document.getElementById('admin-login-btn');
-  const passwordInput = document.getElementById('admin-password-input');
-  
-  const authSection = document.getElementById('admin-auth-section');
-  const panelSection = document.getElementById('admin-panel-section');
-  const addForm = document.getElementById('add-article-form');
-  const downloadBtn = document.getElementById('admin-download-json');
-
-  const ADMIN_PASS = "olympic2026";
-
-  if (btnOpen) {
-    btnOpen.addEventListener('click', () => {
-      adminModal.style.display = 'flex';
-      authSection.style.display = 'block';
-      panelSection.style.display = 'none';
-      passwordInput.value = '';
-    });
-  }
-
-  const closeAdmin = () => {
-    if (adminModal) adminModal.style.display = 'none';
-  };
-
-  if (btnCloseAuth) btnCloseAuth.addEventListener('click', closeAdmin);
-  if (btnClosePanel) btnClosePanel.addEventListener('click', closeAdmin);
-
-  if (loginBtn) {
-    loginBtn.addEventListener('click', () => {
-      if (passwordInput.value === ADMIN_PASS) {
-        authSection.style.display = 'none';
-        panelSection.style.display = 'block';
-      } else {
-        alert("❌ Неверный пароль администратора!");
-      }
-    });
-  }
-
-  if (addForm) {
-    addForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-
-      const newItem = {
-        title: document.getElementById('new-title').value.trim(),
-        title_original: document.getElementById('new-title').value.trim(),
-        authors: document.getElementById('new-authors').value.trim(),
-        year: parseInt(document.getElementById('new-year').value, 10) || 2026,
-        category: document.getElementById('new-category').value,
-        country: document.getElementById('new-country').value.trim(),
-        url: document.getElementById('new-url').value.trim() || "https://scholar.google.com",
-        summary_ru: document.getElementById('new-abstract').value.trim() || "Аннотация добавлена вручную через панель администратора.",
-        ai_processed: true,
-        type: "Научная статья"
-      };
-
-      rawData.unshift(newItem);
-      applyFilters();
-
-      alert("✅ Исследование успешно добавлено в базу данных!");
-      addForm.reset();
-    });
-  }
-
-  if (downloadBtn) {
-    downloadBtn.addEventListener('click', () => {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(rawData, null, 2));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", "web_data.json");
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
-    });
-  }
-}
-
 function escapeHtml(str) {
-  if (!str) return '';
   return String(str)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
