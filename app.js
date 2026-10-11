@@ -138,7 +138,6 @@ window.copyGostCitation = function(buttonElement, realIndex) {
     });
 };
 
-// Заполнение выпадающих списков фильтров
 function populateDropdownFilters() {
   const selectCat = document.getElementById('select-category');
   if (selectCat) {
@@ -153,7 +152,7 @@ function populateDropdownFilters() {
 
   const selectDocType = document.getElementById('select-doctype');
   if (selectDocType) {
-    selectDocType.innerHTML = `<option value="ALL">Все типы</option>`;
+    selectDocType.innerHTML = `<option value="ALL">Все типы документов</option>`;
     ['Научная статья', 'Обзорная статья', 'Монография', 'Диссертация', 'Учебное пособие', 'Материалы конференции'].forEach(type => {
       const opt = document.createElement('option');
       opt.value = type;
@@ -215,7 +214,7 @@ function setupEventListeners() {
     showFavOnly = !showFavOnly;
     const favBtn = document.getElementById('btn-fav-filter');
     if (favBtn) {
-      favBtn.style.backgroundColor = showFavOnly ? '#B38A4B' : '#FFFDF9';
+      favBtn.style.backgroundColor = showFavOnly ? '#10233F' : '#FFFDF9';
       favBtn.style.color = showFavOnly ? '#FFFDF9' : '#10233F';
     }
     applyFilters();
@@ -271,9 +270,6 @@ function applyFilters() {
 
   const headerStatElem = document.getElementById('header-stat-count');
   if (headerStatElem) headerStatElem.innerText = rawData.length.toLocaleString('ru-RU');
-
-  const metricTotal = document.getElementById('metric-total-val');
-  if (metricTotal) metricTotal.innerText = rawData.length.toLocaleString('ru-RU');
 
   renderCurrentView();
   updateCharts(filteredData);
