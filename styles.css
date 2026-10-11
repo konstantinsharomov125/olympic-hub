@@ -721,3 +721,53 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* Кнопка ссылки на VK в шапке сайта */
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.vk-header-link {
+  position: absolute;
+  top: 50%;
+  right: 25px;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 253, 249, 0.12);
+  border: 1px solid rgba(228, 222, 210, 0.35);
+  color: #FFFDF9;
+  padding: 6px 12px;
+  border-radius: 20px;
+  text-decoration: none;
+  font-size: 11.5px;
+  font-weight: 500;
+  transition: all 0.25s ease;
+}
+
+.vk-header-link:hover {
+  background: #0077FF;
+  border-color: #0077FF;
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(0, 119, 255, 0.35);
+  transform: translateY(-50%) scale(1.03);
+}
+
+.vk-icon {
+  display: block;
+}
+
+/* На мобильных экранах скрываем текст, оставляем только лаконичную иконку */
+@media (max-width: 768px) {
+  .vk-text {
+    display: none;
+  }
+  .vk-header-link {
+    padding: 6px;
+    right: 15px;
+  }
+}
