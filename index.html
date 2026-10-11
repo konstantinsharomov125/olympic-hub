@@ -29,7 +29,7 @@
                 <input type="text" id="search-input" placeholder="🔍 Поиск по названию, авторам, аннотации...">
             </div>
 
-            <!-- Строка 2: Все выпадающие списки, сортировка и кнопки -->
+            <!-- Строка 2: Выпадающие списки и кнопки -->
             <div class="controls-row">
                 <select id="select-category">
                     <option value="ALL">Все направления</option>
@@ -76,6 +76,32 @@
         </div>
     </section>
 
+    <!-- БЛОК АНАЛИТИКИ СВЕРХУ (Горизонтальный ряд из 3 графиков) -->
+    <section class="analytics-top-section">
+        <div class="analytics-top-container">
+            <div class="analytics-card-horizontal">
+                <h3>Направления олимпизма</h3>
+                <div class="chart-box-horizontal">
+                    <canvas id="donutChart"></canvas>
+                </div>
+            </div>
+
+            <div class="analytics-card-horizontal">
+                <h3>Динамика публикаций по годам</h3>
+                <div class="chart-box-horizontal">
+                    <canvas id="lineChart"></canvas>
+                </div>
+            </div>
+
+            <div class="analytics-card-horizontal">
+                <h3>Ведущие страны</h3>
+                <div class="chart-box-horizontal">
+                    <canvas id="barChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Счетчик результатов по фильтрам -->
     <div class="results-counter-bar">
         <div class="counter-badge">
@@ -83,48 +109,16 @@
         </div>
     </div>
 
-    <!-- Основной двухколоночный макет -->
-    <main class="main-container">
-        
-        <!-- Левая колонка: Лента исследований + Пагинация -->
-        <div class="feed-column-wrapper" style="flex: 1;">
+    <!-- Основной контейнер (теперь во всю ширину без сайдбара) -->
+    <main class="main-container-full">
+        <div class="feed-column-wrapper">
             <section class="feed-column" id="publications-feed">
                 <!-- Карточки подгружаются динамически -->
             </section>
             
-            <!-- Контейнер постраничной навигации -->
+            <!-- Постраничная навигация -->
             <div id="pagination-container" class="pagination-container"></div>
         </div>
-
-        <!-- Правая колонка: Закрепленный блок аналитики -->
-        <aside class="analytics-sidebar">
-            <div class="analytics-card">
-                <h3>АНАЛИТИКА ВЫБОРКИ</h3>
-                
-                <div class="chart-block">
-                    <h4>Направления олимпизма</h4>
-                    <div class="chart-box">
-                        <canvas id="donutChart"></canvas>
-                    </div>
-                </div>
-
-                <div class="chart-block">
-                    <h4>Динамика по годам</h4>
-                    <div class="chart-box">
-                        <canvas id="lineChart"></canvas>
-                    </div>
-                </div>
-
-                <!-- Шаг 1: Новый график «Ведущие страны» -->
-                <div class="chart-block">
-                    <h4>Ведущие страны</h4>
-                    <div class="chart-box" style="height: 160px;">
-                        <canvas id="barChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </aside>
-
     </main>
 
     <!-- Модальное окно просмотра аннотации -->
