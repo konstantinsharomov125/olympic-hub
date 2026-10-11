@@ -772,7 +772,7 @@ body {
   }
 }
 
-/* Шапка-баннер с изображением */
+/* Узкий и компактный баннер шапки */
 .site-header-image-banner {
   position: relative;
   width: 100%;
@@ -784,8 +784,7 @@ body {
 .header-banner-img {
   width: 100%;
   height: auto;
-  min-height: 110px;
-  max-height: 220px;
+  max-height: 105px; /* Уменьшили высоту: можете поставить 90px или 120px по вкусу */
   object-fit: cover;
   object-position: left center;
   display: block;
@@ -806,18 +805,21 @@ body {
   background: rgba(7, 16, 30, 0.85);
   border: 1px solid rgba(197, 155, 39, 0.6);
   color: #FFFDF9;
-  padding: 8px 14px;
+  padding: 6px 12px;
   border-radius: 20px;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .site-header-image-banner .vk-badge-link {
   background: #0077FF;
   color: #FFFFFF;
-  padding: 8px 14px;
+  padding: 6px 12px;
   border-radius: 20px;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 600;
   text-decoration: none;
   display: flex;
