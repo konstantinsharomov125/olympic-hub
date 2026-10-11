@@ -1,228 +1,132 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Олимпийский исследовательский портал</title>
-
-  <!-- Подключение шрифтов Варианта № 1: Literata + Inter -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;0,7..72,700;1,7..72,400&display=swap" rel="stylesheet">
-
-  <link rel="stylesheet" href="styles.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Олимпийский исследовательский портал</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Подключаем Chart.js для графиков -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
-  <!-- ВЕРХНЯЯ ШАПКА -->
-  <header class="site-header">
-    <div class="header-container">
-      <div class="brand-block">
-        <svg class="brand-logo-svg" viewBox="0 0 48 48">
-          <path d="M8 38V12C8 9.79 9.79 8 12 8H24V40H12C9.79 40 8 38.21 8 38Z" />
-          <path d="M40 38V12C40 9.79 38.21 8 36 8H24V40H36C38.21 40 40 38.21 40 38Z" />
-          <path d="M12 16H20 M12 22H20 M12 28H18 M28 16H36 M28 22H36 M28 28H34" />
-          <path d="M18 8C18 4.68 20.68 2 24 2C27.32 2 30 4.68 30 8" />
-        </svg>
-        <span class="brand-title">Олимпийский исследовательский портал</span>
-      </div>
-
-      <div class="status-badge">
-        <span class="status-dot"></span>
-        <span>Исследований в базе: <strong id="header-stat-count">1 639</strong></span>
-      </div>
-    </div>
-  </header>
-
-  <div class="portal-wrapper">
-
-    <!-- HERO БАННЕР -->
-    <section class="hero-banner">
-      <div class="hero-text">
-        <h1 class="hero-title">Олимпийский исследовательский портал</h1>
-        <p class="hero-subtitle">Научно-аналитическая платформа, которая собирает, систематизирует и анализирует исследования по олимпизму, олимпийскому движению и олимпийскому образованию.</p>
-      </div>
-    </section>
-
-    <!-- 5 КАРТОЧЕК МЕТРИК -->
-    <section class="metrics-row">
-      <div class="metric-card">
-        <div class="metric-icon-box">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-        </div>
-        <div class="metric-info">
-          <span class="metric-val" id="metric-total-val">1 639</span>
-          <span class="metric-lbl">Исследований в выборке</span>
-        </div>
-      </div>
-
-      <div class="metric-card">
-        <div class="metric-icon-box">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        </div>
-        <div class="metric-info">
-          <span class="metric-val">1896 – 2026</span>
-          <span class="metric-lbl">Хронология публикаций</span>
-        </div>
-      </div>
-
-      <div class="metric-card">
-        <div class="metric-icon-box">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        </div>
-        <div class="metric-info">
-          <span class="metric-val">3 238</span>
-          <span class="metric-lbl">Уникальных авторов</span>
-        </div>
-      </div>
-
-      <div class="metric-card">
-        <div class="metric-icon-box">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-        </div>
-        <div class="metric-info">
-          <span class="metric-val">51</span>
-          <span class="metric-lbl">Журналов и изданий</span>
-        </div>
-      </div>
-
-      <div class="metric-card">
-        <div class="metric-icon-box">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
-        </div>
-        <div class="metric-info">
-          <span class="metric-val">100%</span>
-          <span class="metric-lbl">Открытый доступ (Open Access)</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- ОСНОВНОЙ 2-КОЛОНОЧНЫЙ МАКЕТ -->
-    <div class="main-layout">
-
-      <!-- ЛЕВАЯ КОЛОНКА -->
-      <div class="feed-column">
-        
-        <!-- ПАНЕЛЬ ФИЛЬТРАЦИИ -->
-        <section class="filter-card">
-          <!-- Поиск -->
-          <div class="search-field-wrapper">
-            <svg class="search-icon-inside" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" id="search-input" class="search-input-main" placeholder="Поиск по заглавию, авторам, методам...">
-          </div>
-
-          <!-- 4 ВЫПАДАЮЩИХ СПИСКА -->
-          <div class="filter-selects-grid">
-            <select id="select-category" class="filter-select">
-              <option value="ALL">Все направления</option>
-            </select>
-
-            <select id="select-doctype" class="filter-select">
-              <option value="ALL">Все типы документов</option>
-            </select>
-
-            <select id="select-country" class="filter-select">
-              <option value="ALL">Все страны</option>
-            </select>
-
-            <select id="select-language" class="filter-select">
-              <option value="ALL">Все языки</option>
-            </select>
-          </div>
-
-          <!-- Год от / Год до -->
-          <div class="filter-years-row">
-            <input type="number" id="year-from" class="input-year" placeholder="Год от" min="1896" max="2026">
-            <input type="number" id="year-to" class="input-year" placeholder="Год до" min="1896" max="2026">
-          </div>
-
-          <!-- Кнопки управления -->
-          <div class="filter-actions-row">
-            <button class="btn-secondary" id="btn-reset">🔄 Сбросить фильтры</button>
-            
-            <div style="display: flex; gap: 0.75rem;">
-              <button class="btn-gold-action" id="btn-fav-filter">★ Избранное ( <span id="fav-count">0</span> )</button>
-              <button class="btn-primary-dark" id="btn-export-csv">📊 Экспорт в CSV</button>
+    <!-- Шапкa сайта -->
+    <header class="site-header">
+        <div class="header-content">
+            <div class="logo-area">
+                <span class="logo-icon">📖</span>
+                <h1>Олимпийский исследовательский портал</h1>
             </div>
-          </div>
+            <div class="header-stats-and-admin" style="display: flex; align-items: center; gap: 15px;">
+                <!-- Кнопка вызова админ-панели -->
+                <button id="btn-admin-open" style="background: #1a365d; color: #fff; border: 1px solid rgba(255,255,255,0.3); padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 500; transition: background 0.2s;">
+                  ⚙️ Админ-панель
+                </button>
+                <div class="database-counter" id="db-counter">
+                    Исследований в базе: <span>...</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Основной контейнер -->
+    <main class="main-container">
+        
+        <!-- Левая и центральная колонки: Список исследований -->
+        <section class="feed-section" id="articles-feed">
+            <!-- Сюда динамически подгружаются карточки статей через app.js -->
         </section>
 
-        <!-- ТУЛБАР ВЫДАЧИ И МНОГОФУНКЦИОНАЛЬНЫЙ ПЕРЕКЛЮЧАТЕЛЬ ВИДА -->
-        <div class="toolbar-row">
-          <div class="results-counter">
-            Найдено исследований: <strong id="current-count">1 639</strong>
-          </div>
-          
-          <div class="view-switcher-group">
-            <span style="font-size: 0.8rem; margin-right: 0.25rem;">Вид:</span>
-            <button class="view-btn active" id="btn-view-grid" onclick="changeViewMode('grid')">▧ Сетка</button>
-            <button class="view-btn" id="btn-view-list" onclick="changeViewMode('list')">≡ Список</button>
-            <button class="view-btn" id="btn-view-table" onclick="changeViewMode('table')">▤ Таблица</button>
-          </div>
+        <!-- Правая колонка: Аналитика и статистика -->
+        <aside class="analytics-sidebar">
+            <div class="analytics-card">
+                <h3>АНАЛИТИКА ВЫБОРКИ</h3>
+                
+                <div class="chart-container">
+                    <h4>Направления олимпизма</h4>
+                    <canvas id="categoryChart"></canvas>
+                </div>
+
+                <div class="chart-container" style="margin-top: 25px;">
+                    <h4>Динамика по годам</h4>
+                    <canvas id="dynamicsChart"></canvas>
+                </div>
+            </div>
+        </aside>
+
+    </main>
+
+    <!-- Модальное окно полного текста / аннотации -->
+    <div id="modal-overlay" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <button class="modal-close" id="modal-close">✕</button>
+            <h2 id="modal-title">Название исследования</h2>
+            <p class="modal-meta" id="modal-meta">Авторы, год</p>
+            <div class="modal-body">
+                <h4>📌 Аннотация:</h4>
+                <p id="modal-abstract">Текст аннотации...</p>
+            </div>
+            <div class="modal-footer">
+                <a id="modal-link" href="#" target="_blank" class="btn-primary">Оригинал публикации ↗</a>
+            </div>
         </div>
-
-        <!-- КОНТЕЙНЕР ПУБЛИКАЦИЙ -->
-        <div id="publications-feed" class="cards-grid">
-          <!-- Рендерится автоматически -->
-        </div>
-
-      </div>
-
-      <!-- ПРАВАЯ КОЛОНКА -->
-      <aside class="analytics-sidebar-card">
-        <h2 class="analytics-main-title">АНАЛИТИКА ВЫБОРКИ</h2>
-
-        <div class="chart-block">
-          <h3 class="chart-subtitle">Направления олимпизма</h3>
-          <div class="canvas-container">
-            <canvas id="donutChart"></canvas>
-          </div>
-        </div>
-
-        <div class="chart-block">
-          <h3 class="chart-subtitle">Динамика по годам</h3>
-          <div class="canvas-container">
-            <canvas id="lineChart"></canvas>
-          </div>
-        </div>
-      </aside>
-
     </div>
 
-  </div>
+    <!-- Модальное окно Админ-панели -->
+    <div id="admin-modal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center;">
+      <div class="modal-content" style="background: #FFFDF9; padding: 25px; border-radius: 8px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
+        
+        <!-- Шаг 1: Авторизация -->
+        <div id="admin-auth-section">
+          <h3 style="color: #1a365d; margin-top: 0;">🔐 Вход в панель управления</h3>
+          <p style="font-size: 13px; color: #666;">Введите пароль администратора для доступа к управлению базой данных.</p>
+          <input type="password" id="admin-password-input" placeholder="Введите пароль..." style="width: 100%; padding: 8px; box-sizing: border-box; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;">
+          <button id="admin-login-btn" style="background: #1a365d; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Войти</button>
+          <button id="admin-close-auth" style="background: #ccc; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-left: 5px;">Закрыть</button>
+        </div>
 
-  <!-- МОДАЛЬНОЕ ОКНО -->
-  <div class="modal-backdrop" id="modal-view">
-    <div class="modal-content">
-      <button class="modal-close-btn" id="modal-close">&times;</button>
-      <span class="badge-cat" id="modal-discipline">Дисциплина</span>
-      <h2 class="modal-title" id="modal-title">Название научной работы</h2>
-      
-      <div class="modal-meta-grid">
-        <div><strong>Авторы:</strong> <span id="modal-authors">Автор не указан</span></div>
-        <div><strong>Год:</strong> <span id="modal-year">—</span></div>
-        <div><strong>Тип документа:</strong> <span id="modal-doctype">Научная статья</span></div>
-        <div><strong>Страна:</strong> <span id="modal-country">Страна не распознана</span></div>
-      </div>
+        <!-- Шаг 2: Панель управления (скрыта до ввода пароля) -->
+        <div id="admin-panel-section" style="display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">
+            <h3 style="color: #1a365d; margin: 0;">🛠️ Управление базой данных</h3>
+            <button id="admin-panel-close" style="background: none; border: none; font-size: 18px; cursor: pointer;">✕</button>
+          </div>
 
-      <div class="modal-abstract-full" id="modal-abstract">
-        Полный текст аннотации...
-      </div>
+          <h4 style="margin-bottom: 8px; color: #333;">➕ Добавить исследование вручную</h4>
+          <form id="add-article-form" style="display: flex; flex-direction: column; gap: 10px;">
+            <input type="text" id="new-title" placeholder="Название исследования *" required style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px;">
+            <input type="text" id="new-authors" placeholder="Авторы (через запятую) *" required style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px;">
+            <div style="display: flex; gap: 10px;">
+              <input type="number" id="new-year" placeholder="Год (например, 2026)" value="2026" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px;">
+              <select id="new-category" style="flex: 2; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px;">
+                <option value="Теория и методология олимпийского движения">Теория и методология олимпийского движения</option>
+                <option value="История и наследие олимпизма">История и наследие олимпизма</option>
+                <option value="Олимпийское образование и просвещение">Олимпийское образование и просвещение</option>
+                <option value="Спортивная медицина, физиология и биомеханика">Спортивная медицина, физиология и биомеханика</option>
+                <option value="Подготовка олимпийского резерва и тренировка">Подготовка олимпийского резерва и тренировка</option>
+                <option value="Другое">Другое</option>
+              </select>
+            </div>
+            <div style="display: flex; gap: 10px;">
+              <input type="text" id="new-country" placeholder="Страна (например, Россия)" value="Россия" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px;">
+              <input type="text" id="new-url" placeholder="Ссылка (DOI / URL оригинала)" style="flex: 2; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px;">
+            </div>
+            <textarea id="new-abstract" placeholder="Текст аннотации на русском языке..." rows="3" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px;"></textarea>
+            
+            <button type="submit" style="background: #2E7D32; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-weight: bold;">Добавить в базу</button>
+          </form>
 
-      <div style="margin-top: 1.25rem;">
-        <a href="#" id="modal-original-link" target="_blank" class="btn-primary-dark">
-          🔗 Открыть оригинал исследования
-        </a>
-      </div>
+          <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
 
-      <h4 style="font-family: var(--font-serif); color: var(--primary-navy); margin-top: 1.5rem; margin-bottom: 0.5rem;">Цитирование (ГОСТ Р 7.0.100–2018)</h4>
-      <div class="citation-box" id="modal-citation">
-        Загрузка цитаты...
+          <h4 style="margin-bottom: 8px; color: #333;">💾 Экспорт обновленной базы</h4>
+          <p style="font-size: 12px; color: #666;">После добавления новых работ скачайте файл и замените им `web_data.json` в вашем репозитории.</p>
+          <button id="admin-download-json" style="background: #007bff; color: white; border: none; padding: 8px 14px; border-radius: 4px; cursor: pointer; font-size: 12px;">📥 Скачать web_data.json</button>
+        </div>
+
       </div>
     </div>
-  </div>
 
-  <script src="app.js"></script>
+    <!-- Подключаем скрипт логики сайта -->
+    <script src="app.js"></script>
 </body>
 </html>
