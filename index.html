@@ -5,113 +5,103 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Олимпийский исследовательский портал</title>
     <link rel="stylesheet" href="styles.css">
-    <!-- Подключаем Chart.js для графиков -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
     <!-- Шапка сайта -->
-    <header class="site-header" style="position: relative; padding: 20px 25px; background: #10233F; color: #FFFDF9; border-bottom: 3px solid #B38A4B;">
-        <!-- Количество работ в базе в верхнем левом углу -->
-        <div style="position: absolute; top: 15px; left: 25px; font-size: 11px; background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 4px; color: #E4DED2; letter-spacing: 0.5px;">
-            📚 Исследований в базе: <strong id="header-stat-count" style="color: #FFFDF9;">...</strong>
+    <header class="site-header">
+        <div class="db-stat-top">
+            📚 Исследований в базе: <strong id="header-stat-count">...</strong>
         </div>
-
-        <!-- Название и логотип по центру -->
-        <div class="logo-area" style="text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;">
-            <span class="logo-icon" style="font-size: 26px;">📖</span>
-            <h1 style="font-size: 22px; font-family: var(--font-serif); font-weight: 600; margin: 0; letter-spacing: 0.5px;">Олимпийский исследовательский портал</h1>
+        <div class="logo-area">
+            <span class="logo-icon">📖</span>
+            <h1>Олимпийский исследовательский портал</h1>
         </div>
     </header>
 
-    <!-- Улучшенная, более крупная и приятная панель фильтров -->
-    <section class="filters-section" style="background: #FFFDF9; border-bottom: 1px solid #E4DED2; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
-        <div class="filters-container" style="max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px;">
+    <!-- Компактная и аккуратная панель фильтров -->
+    <section class="filters-section">
+        <div class="filters-wrapper">
             
-            <!-- Верхняя строка фильтров: Поиск и основные селекты -->
-            <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
-                <div style="flex: 2; min-width: 280px;">
-                    <input type="text" id="search-input" placeholder="🔍 Поиск по названию, авторам, аннотации..." style="width: 100%; padding: 10px 14px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; background: #fff;">
-                </div>
-
-                <div style="flex: 1; min-width: 180px;">
-                    <select id="select-category" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 12px; background: #fff;">
-                        <option value="ALL">Все направления</option>
-                    </select>
-                </div>
-
-                <div style="flex: 1; min-width: 150px;">
-                    <select id="select-doctype" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 12px; background: #fff;">
-                        <option value="ALL">Все типы</option>
-                    </select>
-                </div>
+            <!-- Строка 1: Главный поиск -->
+            <div class="search-row">
+                <input type="text" id="search-input" placeholder="🔍 Поиск по названию, авторам, аннотации...">
             </div>
 
-            <!-- Нижняя строка фильтров: Страны, языки, годы, кнопки -->
-            <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;">
-                <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
-                    <select id="select-country" style="padding: 9px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 12px; background: #fff;">
-                        <option value="ALL">Все страны</option>
-                    </select>
+            <!-- Строка 2: Все выпадающие списки и кнопки в один красивый ряд -->
+            <div class="controls-row">
+                <select id="select-category">
+                    <option value="ALL">Все направления</option>
+                </select>
 
-                    <select id="select-language" style="padding: 9px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 12px; background: #fff;">
-                        <option value="ALL">Все языки</option>
-                    </select>
+                <select id="select-doctype">
+                    <option value="ALL">Все типы документов</option>
+                </select>
 
-                    <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #444; background: #f8f9fa; padding: 6px 12px; border: 1px solid #e9ecef; border-radius: 6px;">
-                        <span>Год с:</span>
-                        <input type="number" id="year-from" placeholder="1896" style="width: 65px; padding: 5px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; text-align: center;">
-                        <span>по</span>
-                        <input type="number" id="year-to" placeholder="2026" style="width: 65px; padding: 5px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; text-align: center;">
-                    </div>
+                <select id="select-country">
+                    <option value="ALL">Все страны</option>
+                </select>
+
+                <select id="select-language">
+                    <option value="ALL">Все языки</option>
+                </select>
+
+                <div class="years-box">
+                    <span>Год:</span>
+                    <input type="number" id="year-from" placeholder="1896">
+                    <span>—</span>
+                    <input type="number" id="year-to" placeholder="2026">
                 </div>
 
-                <div style="display: flex; gap: 8px; align-items: center;">
-                    <button id="btn-fav-filter" style="padding: 9px 14px; border: 1px solid #10233F; background: #FFFDF9; color: #10233F; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500; transition: all 0.2s;">
-                        ★ Избранное (<span id="fav-count">0</span>)
-                    </button>
+                <button id="btn-fav-filter" class="btn-filter-fav">
+                    ★ Избранное (<span id="fav-count">0</span>)
+                </button>
 
-                    <button id="btn-reset" style="padding: 9px 14px; border: 1px solid #ccc; background: #f8f9fa; color: #333; border-radius: 6px; cursor: pointer; font-size: 12px;">
-                        Сбросить
-                    </button>
+                <button id="btn-reset" class="btn-filter-reset">
+                    Сбросить
+                </button>
 
-                    <button id="btn-export-csv" style="padding: 9px 14px; border: none; background: #2E7D32; color: #fff; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500;">
-                        📥 Скачать CSV
-                    </button>
-                </div>
+                <button id="btn-export-csv" class="btn-filter-csv">
+                    📥 CSV
+                </button>
             </div>
 
         </div>
     </section>
 
-    <!-- Количество найденных работ отображается строго под фильтрами -->
-    <div style="max-width: 1400px; margin: 15px auto 0 auto; padding: 0 20px;">
-        <div style="font-size: 13px; color: #555; background: #f0f4f8; padding: 8px 14px; border-radius: 6px; border-left: 4px solid #10233F; display: inline-block;">
-            🔍 Найдено исследований по вашему запросу: <strong id="current-count" style="color: #10233F; font-size: 14px;">0</strong>
+    <!-- Счетчик результатов по фильтрам -->
+    <div class="results-counter-bar">
+        <div class="counter-badge">
+            🔍 Найдено исследований: <strong id="current-count">0</strong>
         </div>
     </div>
 
-    <!-- Основной контейнер -->
-    <main class="main-container" style="display: flex; max-width: 1400px; margin: 15px auto 30px auto; gap: 20px; padding: 0 15px;">
+    <!-- Основной двухколоночный макет -->
+    <main class="main-container">
         
-        <!-- Лента исследований -->
-        <section class="feed-section" id="publications-feed" style="flex: 1;">
-            <!-- Карточки -->
+        <!-- Левая колонка: Лента исследований (3 колонки внутри) -->
+        <section class="feed-column" id="publications-feed">
+            <!-- Карточки подгружаются динамически -->
         </section>
 
-        <!-- Правая колонка: Аналитика и статистика -->
-        <aside class="analytics-sidebar" style="width: 340px; flex-shrink: 0;">
-            <div class="analytics-card" style="background: #FFFDF9; border: 1px solid #E4DED2; border-radius: 6px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
-                <h3 style="font-size: 14px; color: #10233F; margin-bottom: 15px; border-bottom: 2px solid #10233F; padding-bottom: 5px;">АНАЛИТИКА ВЫБОРКИ</h3>
+        <!-- Правая колонка: Закрепленный блок аналитики -->
+        <aside class="analytics-sidebar">
+            <div class="analytics-card">
+                <h3>АНАЛИТИКА ВЫБОРКИ</h3>
                 
-                <div class="chart-container" style="position: relative; height: 220px;">
-                    <h4 style="font-size: 12px; color: #333; margin-bottom: 8px;">Направления олимпизма</h4>
-                    <canvas id="donutChart"></canvas>
+                <div class="chart-block">
+                    <h4>Направления олимпизма</h4>
+                    <div class="chart-box">
+                        <canvas id="donutChart"></canvas>
+                    </div>
                 </div>
 
-                <div class="chart-container" style="position: relative; height: 200px; margin-top: 25px;">
-                    <h4 style="font-size: 12px; color: #333; margin-bottom: 8px;">Динамика по годам</h4>
-                    <canvas id="lineChart"></canvas>
+                <div class="chart-block">
+                    <h4>Динамика по годам</h4>
+                    <div class="chart-box">
+                        <canvas id="lineChart"></canvas>
+                    </div>
                 </div>
             </div>
         </aside>
@@ -119,27 +109,26 @@
     </main>
 
     <!-- Модальное окно просмотра аннотации -->
-    <div id="modal-view" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center;">
-        <div class="modal-content" style="background: #FFFDF9; padding: 25px; border-radius: 8px; width: 90%; max-width: 650px; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.2); position: relative;">
-            <button class="modal-close" id="modal-close" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 20px; cursor: pointer;">✕</button>
-            <h2 id="modal-title" style="color: #10233F; font-size: 18px; margin-bottom: 10px;">Название исследования</h2>
-            <p class="modal-meta" style="font-size: 13px; color: #555; margin-bottom: 5px;"><span id="modal-authors">Авторы</span> (<span id="modal-year">2026</span>)</p>
-            <p style="font-size: 12px; color: #666; margin-bottom: 15px;">
+    <div id="modal-view" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close" id="modal-close">✕</button>
+            <h2 id="modal-title">Название исследования</h2>
+            <p class="modal-meta"><span id="modal-authors">Авторы</span> (<span id="modal-year">2026</span>)</p>
+            <p class="modal-tags">
                 Направление: <strong id="modal-discipline">-</strong> | Тип: <strong id="modal-doctype">-</strong> | Страна: <strong id="modal-country">-</strong>
             </p>
-            <div class="modal-body" style="border-top: 1px solid #eee; padding-top: 15px;">
-                <h4 style="font-size: 13px; color: #10233F; margin-bottom: 5px;">📌 Аннотация:</h4>
-                <p id="modal-abstract" style="font-size: 13px; line-height: 1.5; color: #333; margin-bottom: 15px;">Текст аннотации...</p>
-                <h4 style="font-size: 13px; color: #10233F; margin-bottom: 5px;">📋 ГОСТ Р 7.0.100–2018:</h4>
-                <p id="modal-citation" style="font-style: italic; background: #f8f9fa; padding: 10px; border-radius: 4px; font-size: 11px; line-height: 1.4; color: #333; border: 1px solid #e9ecef;"></p>
+            <div class="modal-body">
+                <h4>📌 Аннотация:</h4>
+                <p id="modal-abstract">Текст аннотации...</p>
+                <h4>📋 ГОСТ Р 7.0.100–2018:</h4>
+                <p id="modal-citation" class="gost-modal-text"></p>
             </div>
-            <div class="modal-footer" style="margin-top: 20px; text-align: right;">
-                <a id="modal-original-link" href="#" target="_blank" class="btn-primary" style="background: #10233F; color: #fff; padding: 8px 16px; border-radius: 4px; text-decoration: none; font-size: 12px; font-weight: 600;">Оригинал публикации ↗</a>
+            <div class="modal-footer">
+                <a id="modal-original-link" href="#" target="_blank" class="btn-primary-link">Оригинал публикации ↗</a>
             </div>
         </div>
     </div>
 
-    <!-- Подключаем скрипт логики сайта -->
     <script src="app.js"></script>
 </body>
 </html>
