@@ -3,7 +3,6 @@ let filteredData = [];
 let favorites = new Set();
 let showFavOnly = false;
 
-let currentViewMode = 'grid';
 let donutChartInstance = null;
 let lineChartInstance = null;
 
@@ -23,6 +22,7 @@ const STANDARD_CATEGORIES = [
 
 document.addEventListener('DOMContentLoaded', async () => {
   await loadDataset();
+  populateDropdownFilters();
   setupEventListeners();
   applyFilters();
 });
@@ -43,7 +43,7 @@ async function loadDataset() {
         break;
       }
     } catch (e) {
-      // Пробуем следующий путь
+      // Ищем по следующему пути
     }
   }
 
@@ -67,12 +67,27 @@ function normalizeDocType(raw) {
   return 'Научная статья';
 }
 
+function normalizeLanguage(raw) {
+  if (!raw) return 'Русский';
+  const s = String(raw).toLowerCase();
+  if (s.includes('ru') || s.includes('rus') || s.includes('рус')) return 'Русский';
+  if (s.includes('en') || s.includes('eng') || s.includes('анг')) return 'Английский';
+  if (s.includes('de') || s.includes('ger')) return 'Немецкий';
+  if (s.includes('fr') || s.includes('fre')) return 'Французский';
+  if (s.includes('es') || s.includes('spa')) return 'Испанский';
+  return 'Другой язык';
+}
+
 function normalizeCountry(raw) {
   if (!raw || raw === 'NR' || raw === 'N/A' || raw === 'null') return 'Другие страны';
   const s = String(raw).trim();
   if (s.toLowerCase().includes('russia') || s.toLowerCase().includes('росси')) return 'Россия';
   if (s.toLowerCase().includes('usa') || s.toLowerCase().includes('сша')) return 'США';
   if (s.toLowerCase().includes('china') || s.toLowerCase().includes('китай')) return 'Китай';
+  if (s.toLowerCase().includes('germany') || s.toLowerCase().includes('герман')) return 'Германия';
+  if (s.toLowerCase().includes('france') || s.toLowerCase().includes('франц')) return 'Франция';
+  if (s.toLowerCase().includes('uk') || s.toLowerCase().includes('england')) return 'Великобритания';
+  if (s.toLowerCase().includes('japan') || s.toLowerCase().includes('япони')) return 'Япония';
   return 'Другие страны';
 }
 
@@ -90,6 +105,8 @@ function extractYear(item) {
     let match = String(y).match(/\b(18\d{2}|19\d{2}|20\d{2})\b/);
     if (match) return parseInt(match[1], 10);
   }
+  let titleMatch = (item.title_original || item.title || '').match(/\b(18\d{2}|19\d{2}|20\d{2})\b/);
+  if (titleMatch) return parseInt(titleMatch[1], 10);
   return 2026;
 }
 
@@ -121,23 +138,142 @@ window.copyGostCitation = function(buttonElement, realIndex) {
     });
 };
 
-function setupEventListeners() {
-  const modalClose = document.getElementById('modal-close');
-  if (modalClose) modalClose.addEventListener('click', closeModal);
+// Заполнение выпадающих списков фильтров
+function populateDropdownFilters() {
+  const selectCat = document.getElementById('select-category');
+  if (selectCat) {
+    selectCat.innerHTML = `<option value="ALL">Все направления</option>`;
+    STANDARD_CATEGORIES.forEach(cat => {
+      const opt = document.createElement('option');
+      opt.value = cat;
+      opt.textContent = cat;
+      selectCat.appendChild(opt);
+    });
+  }
 
-  const modalView = document.getElementById('modal-view');
-  if (modalView) {
-    modalView.addEventListener('click', (e) => {
-      if (e.target.id === 'modal-view') closeModal();
+  const selectDocType = document.getElementById('select-doctype');
+  if (selectDocType) {
+    selectDocType.innerHTML = `<option value="ALL">Все типы</option>`;
+    ['Научная статья', 'Обзорная статья', 'Монография', 'Диссертация', 'Учебное пособие', 'Материалы конференции'].forEach(type => {
+      const opt = document.createElement('option');
+      opt.value = type;
+      opt.textContent = type;
+      selectDocType.appendChild(opt);
+    });
+  }
+
+  const selectCountry = document.getElementById('select-country');
+  if (selectCountry) {
+    selectCountry.innerHTML = `<option value="ALL">Все страны</option>`;
+    ['Россия', 'США', 'Китай', 'Германия', 'Франция', 'Великобритания', 'Япония', 'Другие страны'].forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c;
+      opt.textContent = c;
+      selectCountry.appendChild(opt);
+    });
+  }
+
+  const selectLang = document.getElementById('select-language');
+  if (selectLang) {
+    selectLang.innerHTML = `<option value="ALL">Все языки</option>`;
+    ['Русский', 'Английский', 'Немецкий', 'Французский', 'Испанский', 'Другой язык'].forEach(l => {
+      const opt = document.createElement('option');
+      opt.value = l;
+      opt.textContent = l;
+      selectLang.appendChild(opt);
     });
   }
 }
 
+function setupEventListeners() {
+  document.getElementById('search-input')?.addEventListener('input', applyFilters);
+  document.getElementById('select-category')?.addEventListener('change', applyFilters);
+  document.getElementById('select-doctype')?.addEventListener('change', applyFilters);
+  document.getElementById('select-country')?.addEventListener('change', applyFilters);
+  document.getElementById('select-language')?.addEventListener('change', applyFilters);
+  document.getElementById('year-from')?.addEventListener('input', applyFilters);
+  document.getElementById('year-to')?.addEventListener('input', applyFilters);
+
+  document.getElementById('btn-reset')?.addEventListener('click', () => {
+    if (document.getElementById('search-input')) document.getElementById('search-input').value = '';
+    if (document.getElementById('select-category')) document.getElementById('select-category').value = 'ALL';
+    if (document.getElementById('select-doctype')) document.getElementById('select-doctype').value = 'ALL';
+    if (document.getElementById('select-country')) document.getElementById('select-country').value = 'ALL';
+    if (document.getElementById('select-language')) document.getElementById('select-language').value = 'ALL';
+    if (document.getElementById('year-from')) document.getElementById('year-from').value = '';
+    if (document.getElementById('year-to')) document.getElementById('year-to').value = '';
+    showFavOnly = false;
+    const favBtn = document.getElementById('btn-fav-filter');
+    if (favBtn) {
+      favBtn.style.backgroundColor = '#FFFDF9';
+      favBtn.style.color = '#10233F';
+    }
+    applyFilters();
+  });
+
+  document.getElementById('btn-fav-filter')?.addEventListener('click', () => {
+    showFavOnly = !showFavOnly;
+    const favBtn = document.getElementById('btn-fav-filter');
+    if (favBtn) {
+      favBtn.style.backgroundColor = showFavOnly ? '#B38A4B' : '#FFFDF9';
+      favBtn.style.color = showFavOnly ? '#FFFDF9' : '#10233F';
+    }
+    applyFilters();
+  });
+
+  document.getElementById('btn-export-csv')?.addEventListener('click', exportToCSV);
+
+  document.getElementById('modal-close')?.addEventListener('click', closeModal);
+  document.getElementById('modal-view')?.addEventListener('click', (e) => {
+    if (e.target.id === 'modal-view') closeModal();
+  });
+}
+
 function applyFilters() {
-  filteredData = [...rawData];
+  const searchVal = document.getElementById('search-input')?.value.toLowerCase().trim() || '';
+  const catVal = document.getElementById('select-category')?.value || 'ALL';
+  const docTypeVal = document.getElementById('select-doctype')?.value || 'ALL';
+  const countryVal = document.getElementById('select-country')?.value || 'ALL';
+  const langVal = document.getElementById('select-language')?.value || 'ALL';
+  const yearFrom = parseInt(document.getElementById('year-from')?.value, 10);
+  const yearTo = parseInt(document.getElementById('year-to')?.value, 10);
+
+  filteredData = rawData.filter((item, idx) => {
+    if (showFavOnly && !favorites.has(idx)) return false;
+
+    const cat = item.category || 'Другое';
+    if (catVal !== 'ALL' && cat !== catVal) return false;
+
+    const docType = normalizeDocType(item.type);
+    if (docTypeVal !== 'ALL' && docType !== docTypeVal) return false;
+
+    const country = normalizeCountry(item.country);
+    if (countryVal !== 'ALL' && country !== countryVal) return false;
+
+    const lang = normalizeLanguage(item.language);
+    if (langVal !== 'ALL' && lang !== langVal) return false;
+
+    const year = extractYear(item);
+    if (!isNaN(yearFrom) && year < yearFrom) return false;
+    if (!isNaN(yearTo) && year > yearTo) return false;
+
+    const title = (item.title_original || item.title || '').toLowerCase();
+    const summary = (item.summary_ru || item.summary || item.abstract || '').toLowerCase();
+    const authors = normalizeAuthors(item).toLowerCase();
+
+    if (searchVal && !title.includes(searchVal) && !summary.includes(searchVal) && !authors.includes(searchVal)) return false;
+
+    return true;
+  });
+
+  const currCountElem = document.getElementById('current-count');
+  if (currCountElem) currCountElem.innerText = filteredData.length.toLocaleString('ru-RU');
 
   const headerStatElem = document.getElementById('header-stat-count');
   if (headerStatElem) headerStatElem.innerText = rawData.length.toLocaleString('ru-RU');
+
+  const metricTotal = document.getElementById('metric-total-val');
+  if (metricTotal) metricTotal.innerText = rawData.length.toLocaleString('ru-RU');
 
   renderCurrentView();
   updateCharts(filteredData);
@@ -150,7 +286,7 @@ function renderCurrentView() {
   const items = filteredData.slice(0, 60);
 
   if (items.length === 0) {
-    container.innerHTML = `<div class="pub-card" style="text-align: center; padding: 3rem;"><p>Исследования не найдены или загружаются...</p></div>`;
+    container.innerHTML = `<div class="pub-card" style="grid-column: 1 / -1; text-align: center; padding: 3rem;"><p style="color: #666; font-family: serif;">По вашему запросу не найдено исследований.</p></div>`;
     return;
   }
 
@@ -176,7 +312,7 @@ function renderGridCardHtml(item) {
     <article class="pub-card" style="background: #FFFDF9; border: 1px solid #E4DED2; border-radius: 6px; padding: 18px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
       <div class="pub-badge-group" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
         <span class="badge-cat" style="font-size: 10px; background: #10233F; color: #FFFDF9; padding: 3px 8px; border-radius: 3px; font-weight: 600;">${escapeHtml(category)}</span>
-        <button style="background:none; border:none; cursor:pointer; font-size:1.2rem; color:${isFav ? '#d4af37' : '#ccc'};" onclick="toggleFavorite(${realIndex})">★</button>
+        <button style="background:none; border:none; cursor:pointer; font-size:1.2rem; color:${isFav ? '#B38A4B' : '#ccc'};" onclick="toggleFavorite(${realIndex})" title="В избранное">★</button>
       </div>
       
       <span class="badge-type" style="font-size: 11px; color: #697586; display: block; margin-bottom: 6px;">${escapeHtml(docType)}</span>
@@ -213,6 +349,8 @@ function renderGridCardHtml(item) {
 window.toggleFavorite = function(index) {
   if (favorites.has(index)) favorites.delete(index);
   else favorites.add(index);
+  const favCountElem = document.getElementById('fav-count');
+  if (favCountElem) favCountElem.innerText = favorites.size;
   applyFilters();
 }
 
@@ -230,11 +368,11 @@ window.openModalByItemIndex = function(realIndex) {
   document.getElementById('modal-original-link').href = getOriginalUrl(item);
   document.getElementById('modal-citation').innerText = generateGostCitation(item);
 
-  document.getElementById('modal-view').classList.add('active');
+  document.getElementById('modal-view').style.display = 'flex';
 }
 
 function closeModal() {
-  document.getElementById('modal-view').classList.remove('active');
+  document.getElementById('modal-view').style.display = 'none';
 }
 
 function updateCharts(dataset) {
@@ -293,6 +431,27 @@ function updateCharts(dataset) {
       options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
     });
   }
+}
+
+function exportToCSV() {
+  let csvContent = "data:text/csv;charset=utf-8,Category,Title,Authors,Year,Country,URL\n";
+  filteredData.forEach(item => {
+    const cat = (item.category || '').replace(/"/g, '""');
+    const title = (item.title_original || item.title || '').replace(/"/g, '""');
+    const authors = normalizeAuthors(item).replace(/"/g, '""');
+    const year = extractYear(item);
+    const country = normalizeCountry(item.country).replace(/"/g, '""');
+    const url = getOriginalUrl(item);
+    csvContent += `"${cat}","${title}","${authors}","${year}","${country}","${url}"\n`;
+  });
+  
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", "olympic_research_data.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
 function escapeHtml(str) {
