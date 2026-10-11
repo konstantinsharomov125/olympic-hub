@@ -34,7 +34,7 @@ async function loadData() {
   }
 }
 
-// Отрисовка ленты исследований
+// Отрисовка ленты исследований (в исходном стиле)
 function renderFeed(items) {
   const feed = document.getElementById('articles-feed');
   if (!feed) return;
@@ -58,33 +58,30 @@ function renderFeed(items) {
     const country = item.country || 'Другие страны';
     const url = item.url || '#';
     
-    // Приоритет русскому переводу аннотации, иначе оригинал
     const summary = item.summary_ru || item.summary || item.abstract || 'Аннотация отсутствует.';
-
-    // Генерация ГОСТ Р 7.0.100–2018 (защита от попадания категории/издателя в авторы)
     const gostCitation = generateGostCitation(authors, title, year, url);
 
     card.innerHTML = `
-      <div class="article-header">
+      <div class="article-top-row">
         <span class="article-category">${escapeHtml(category)}</span>
       </div>
       <div class="article-type">${escapeHtml(type)}</div>
       <h2 class="article-title">${escapeHtml(title)}</h2>
-      <div class="article-meta-info">
+      <div class="article-meta">
         <span class="authors">${escapeHtml(authors)} (${year})</span>
-        <span class="country-tag">🌐 ${escapeHtml(country)}</span>
+        <span class="country-badge">🌐 ${escapeHtml(country)}</span>
       </div>
       <div class="article-abstract">
         <strong>📌 Аннотация:</strong> ${escapeHtml(summary)}
       </div>
-      <div class="gost-block">
-        <div class="gost-title">ГОСТ Р 7.0.100–2018:</div>
+      <div class="gost-section">
+        <div class="gost-label">ГОСТ Р 7.0.100–2018:</div>
         <div class="gost-text" id="gost-${index}">${escapeHtml(gostCitation)}</div>
         <button class="btn-copy" onclick="copyGost('gost-${index}', this)">Копировать цитату</button>
       </div>
-      <div class="card-footer">
-        <button class="btn-read-more" onclick='openModal(${JSON.stringify(item).replace(/'/g, "&apos;")})'>Читать аннотацию</button>
-        <a href="${escapeHtml(url)}" target="_blank" class="btn-original">Оригинал ↗</a>
+      <div class="card-actions">
+        <button class="btn-read" onclick='openModal(${JSON.stringify(item).replace(/'/g, "&apos;")})'>Читать аннотацию</button>
+        <a href="${escapeHtml(url)}" target="_blank" class="btn-source">Оригинал ↗</a>
       </div>
     `;
 
@@ -98,7 +95,7 @@ function generateGostCitation(authors, title, year, url) {
   if (authors.includes("Теория") || authors.includes("Подготовка") || authors.includes("История")) {
     cleanAuthors = "Авторский коллектив";
   }
-  return `${cleanAuthors}. ${title} // Электронный ресурс / Научная публикация. — ${year}. — URL: ${url} (дата обращения: 10.10.2026).`;
+  return `${cleanAuthors}. ${title} // Электронный ресурс / Научная публикация. — ${year}. — URL: ${url} (дата обращения: 11.10.2026).`;
 }
 
 // Копирование ГОСТ цитаты в буфер обмена
@@ -235,7 +232,7 @@ function setupAdminPanel() {
   const addForm = document.getElementById('add-article-form');
   const downloadBtn = document.getElementById('admin-download-json');
 
-  const ADMIN_PASS = "olympic2026"; // Пароль администратора
+  const ADMIN_PASS = "olympic2026";
 
   if (btnOpen) {
     btnOpen.addEventListener('click', () => {
