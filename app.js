@@ -8,6 +8,7 @@ const itemsPerPage = 60;
 
 let donutChartInstance = null;
 let lineChartInstance = null;
+let barChartInstance = null; // Инстанс для графика стран
 
 const STANDARD_CATEGORIES = [
   "Олимпийское образование и просвещение",
@@ -447,6 +448,7 @@ function closeModal() {
 function updateCharts(dataset) {
   if (typeof Chart === 'undefined') return;
 
+  // 1. График: Направления олимпизма (Donut)
   const catCounts = {};
   STANDARD_CATEGORIES.forEach(c => catCounts[c] = 0);
   dataset.forEach(item => {
@@ -473,6 +475,7 @@ function updateCharts(dataset) {
     });
   }
 
+  // 2. График: Динамика по годам (Line)
   const yearCounts = {};
   dataset.forEach(item => {
     const y = extractYear(item);
@@ -498,6 +501,43 @@ function updateCharts(dataset) {
         }]
       },
       options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+    });
+  }
+
+  // 3. Шаг 1: График «Ведущие страны» (Horizontal Bar)
+  const countryCounts = {};
+  dataset.forEach(item => {
+    const c = normalizeCountry(item.country);
+    countryCounts[c] = (countryCounts[c] || 0) + 1;
+  });
+
+  const sortedCountries = Object.entries(countryCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5); // Топ-5 стран
+
+  const barCtx = document.getElementById('barChart')?.getContext('2d');
+  if (barCtx) {
+    if (barChartInstance) barChartInstance.destroy();
+    barChartInstance = new Chart(barCtx, {
+      type: 'bar',
+      data: {
+        labels: sortedCountries.map(item => item[0]),
+        datasets: [{
+          data: sortedCountries.map(item => item[1]),
+          backgroundColor: '#29496B',
+          borderRadius: 4
+        }]
+      },
+      options: {
+        indexAxis: 'y', // Горизонтальная гистограмма
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false } },
+          y: { grid: { display: false } }
+        }
+      }
     });
   }
 }

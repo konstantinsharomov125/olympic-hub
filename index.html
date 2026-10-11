@@ -47,7 +47,6 @@
                     <option value="ALL">Все языки</option>
                 </select>
 
-                <!-- Новое: Сортировка -->
                 <select id="select-sort">
                     <option value="year-desc">Сначала новые (по году)</option>
                     <option value="year-asc">Сначала старые (по году)</option>
@@ -113,6 +112,14 @@
                     <h4>Динамика по годам</h4>
                     <div class="chart-box">
                         <canvas id="lineChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Шаг 1: Новый график «Ведущие страны» -->
+                <div class="chart-block">
+                    <h4>Ведущие страны</h4>
+                    <div class="chart-box" style="height: 160px;">
+                        <canvas id="barChart"></canvas>
                     </div>
                 </div>
             </div>
