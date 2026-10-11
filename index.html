@@ -10,21 +10,15 @@
 </head>
 <body>
 
-    <!-- Шапкa сайта -->
+    <!-- Шапка сайта -->
     <header class="site-header">
         <div class="header-content">
             <div class="logo-area">
                 <span class="logo-icon">📖</span>
                 <h1>Олимпийский исследовательский портал</h1>
             </div>
-            <div class="header-stats-and-admin" style="display: flex; align-items: center; gap: 15px;">
-                <!-- Кнопка вызова админ-панели -->
-                <button id="btn-admin-open" style="background: #1a365d; color: #fff; border: 1px solid rgba(255,255,255,0.3); padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 500; transition: background 0.2s;">
-                  ⚙️ Админ-панель
-                </button>
-                <div class="database-counter" id="db-counter">
-                    Исследований в базе: <span>...</span>
-                </div>
+            <div class="database-counter" id="db-counter">
+                Исследований в базе: <span id="header-stat-count">...</span>
             </div>
         </div>
     </header>
@@ -32,9 +26,9 @@
     <!-- Основной контейнер -->
     <main class="main-container">
         
-        <!-- Левая и центральная колонки: Список исследований -->
-        <section class="feed-section" id="articles-feed">
-            <!-- Сюда динамически подгружаются карточки статей через app.js -->
+        <!-- Лента исследований -->
+        <section class="feed-section" id="publications-feed">
+            <!-- Сюда динамически подгружаются карточки -->
         </section>
 
         <!-- Правая колонка: Аналитика и статистика -->
@@ -44,86 +38,37 @@
                 
                 <div class="chart-container">
                     <h4>Направления олимпизма</h4>
-                    <canvas id="categoryChart"></canvas>
+                    <canvas id="donutChart"></canvas>
                 </div>
 
                 <div class="chart-container" style="margin-top: 25px;">
                     <h4>Динамика по годам</h4>
-                    <canvas id="dynamicsChart"></canvas>
+                    <canvas id="lineChart"></canvas>
                 </div>
             </div>
         </aside>
 
     </main>
 
-    <!-- Модальное окно полного текста / аннотации -->
-    <div id="modal-overlay" class="modal-overlay" style="display: none;">
+    <!-- Модальное окно просмотра аннотации -->
+    <div id="modal-view" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <button class="modal-close" id="modal-close">✕</button>
             <h2 id="modal-title">Название исследования</h2>
-            <p class="modal-meta" id="modal-meta">Авторы, год</p>
+            <p class="modal-meta"><span id="modal-authors">Авторы</span> (<span id="modal-year">2026</span>)</p>
+            <p style="font-size: 12px; color: #666; margin-bottom: 10px;">
+                Направление: <strong id="modal-discipline">-</strong> | Тип: <strong id="modal-doctype">-</strong> | Страна: <strong id="modal-country">-</strong>
+            </p>
             <div class="modal-body">
                 <h4>📌 Аннотация:</h4>
                 <p id="modal-abstract">Текст аннотации...</p>
+                <h4 style="margin-top: 15px;">📋 ГОСТ Р 7.0.100–2018:</h4>
+                <p id="modal-citation" style="font-style: italic; background: #f8f9fa; padding: 8px; border-radius: 4px; font-size: 11px;"></p>
             </div>
             <div class="modal-footer">
-                <a id="modal-link" href="#" target="_blank" class="btn-primary">Оригинал публикации ↗</a>
+                <a id="modal-original-link" href="#" target="_blank" class="btn-primary">Оригинал публикации ↗</a>
             </div>
         </div>
-    </div>
-
-    <!-- Модальное окно Админ-панели -->
-    <div id="admin-modal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center;">
-      <div class="modal-content" style="background: #FFFDF9; padding: 25px; border-radius: 8px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
-        
-        <!-- Шаг 1: Авторизация -->
-        <div id="admin-auth-section">
-          <h3 style="color: #1a365d; margin-top: 0;">🔐 Вход в панель управления</h3>
-          <p style="font-size: 13px; color: #666;">Введите пароль администратора для доступа к управлению базой данных.</p>
-          <input type="password" id="admin-password-input" placeholder="Введите пароль..." style="width: 100%; padding: 8px; box-sizing: border-box; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;">
-          <button id="admin-login-btn" style="background: #1a365d; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Войти</button>
-          <button id="admin-close-auth" style="background: #ccc; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-left: 5px;">Закрыть</button>
-        </div>
-
-        <!-- Шаг 2: Панель управления (скрыта до ввода пароля) -->
-        <div id="admin-panel-section" style="display: none;">
-          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">
-            <h3 style="color: #1a365d; margin: 0;">🛠️ Управление базой данных</h3>
-            <button id="admin-panel-close" style="background: none; border: none; font-size: 18px; cursor: pointer;">✕</button>
-          </div>
-
-          <h4 style="margin-bottom: 8px; color: #333;">➕ Добавить исследование вручную</h4>
-          <form id="add-article-form" style="display: flex; flex-direction: column; gap: 10px;">
-            <input type="text" id="new-title" placeholder="Название исследования *" required style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px;">
-            <input type="text" id="new-authors" placeholder="Авторы (через запятую) *" required style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px;">
-            <div style="display: flex; gap: 10px;">
-              <input type="number" id="new-year" placeholder="Год (например, 2026)" value="2026" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px;">
-              <select id="new-category" style="flex: 2; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px;">
-                <option value="Теория и методология олимпийского движения">Теория и методология олимпийского движения</option>
-                <option value="История и наследие олимпизма">История и наследие олимпизма</option>
-                <option value="Олимпийское образование и просвещение">Олимпийское образование и просвещение</option>
-                <option value="Спортивная медицина, физиология и биомеханика">Спортивная медицина, физиология и биомеханика</option>
-                <option value="Подготовка олимпийского резерва и тренировка">Подготовка олимпийского резерва и тренировка</option>
-                <option value="Другое">Другое</option>
-              </select>
-            </div>
-            <div style="display: flex; gap: 10px;">
-              <input type="text" id="new-country" placeholder="Страна (например, Россия)" value="Россия" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px;">
-              <input type="text" id="new-url" placeholder="Ссылка (DOI / URL оригинала)" style="flex: 2; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px;">
-            </div>
-            <textarea id="new-abstract" placeholder="Текст аннотации на русском языке..." rows="3" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px;"></textarea>
-            
-            <button type="submit" style="background: #2E7D32; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-weight: bold;">Добавить в базу</button>
-          </form>
-
-          <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
-
-          <h4 style="margin-bottom: 8px; color: #333;">💾 Экспорт обновленной базы</h4>
-          <p style="font-size: 12px; color: #666;">После добавления новых работ скачайте файл и замените им `web_data.json` в вашем репозитории.</p>
-          <button id="admin-download-json" style="background: #007bff; color: white; border: none; padding: 8px 14px; border-radius: 4px; cursor: pointer; font-size: 12px;">📥 Скачать web_data.json</button>
-        </div>
-
-      </div>
     </div>
 
     <!-- Подключаем скрипт логики сайта -->
