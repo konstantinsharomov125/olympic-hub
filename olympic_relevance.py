@@ -46,6 +46,11 @@ STRONG_MARKERS: tuple[tuple[str, str], ...] = (
     (r"\bwada\b", "WADA / антидопинг"),
     (r"антидопинг", "антидопинг"),
     (r"anti-?doping", "anti-doping"),
+    (r"олимпия|олимпиадаси|олимпия\w*", "олимпийская тематика (узб.)"),
+    (r"post-?olympic", "постолимпийский период"),
+    (r"pre-?olympic", "предолимпийский период"),
+    (r"олимпийск\w*\s+игр", "олимпийские игры"),
+    (r"игр\w*\s+олимпиад", "игры олимпиады"),
 )
 
 #: Названия конкретных Игр сами задают олимпийский контекст.
@@ -144,6 +149,12 @@ def assess_relevance(record: Mapping[str, Any]) -> RelevanceDecision:
     if (title_evidence or body_evidence) and len(title) >= MIN_TITLE_LEN:
         evidence = sorted(set(title_evidence + body_evidence))
         reason = "Подтверждена связь с олимпийской тематикой: " + ", ".join(evidence[:4])
+        return RelevanceDecision(ACCEPTED, reason, evidence)
+
+    # Маркер найден в аннотации или ключевых словах — этого достаточно.
+    if body_evidence and len(abstract) >= 40:
+        evidence = sorted(set(body_evidence))
+        reason = "Связь с олимпийской тематикой подтверждена аннотацией: " + ", ".join(evidence[:4])
         return RelevanceDecision(ACCEPTED, reason, evidence)
 
     # 4. Маркер есть, но заголовок слишком короткий — нужна проверка.

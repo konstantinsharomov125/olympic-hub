@@ -34,14 +34,17 @@ def _merge_into(primary: dict[str, Any], secondary: Mapping[str, Any]) -> None:
     """Дополняет основную запись недостающими полями дубля."""
     merged_from = primary.setdefault("merged_from", [])
 
+    # Сохраняем сведения об источниках обеих записей.
+    source_urls = primary.setdefault("source_urls", [])
+    for url in (primary.get("url"), secondary.get("url")):
+        if url and url not in source_urls:
+            source_urls.append(url)
+    for url in secondary.get("source_urls") or []:
+        if url and url not in source_urls:
+            source_urls.append(url)
+
     for key, value in secondary.items():
-        if key in {"merged_from", "study_id", "relevance_status", "relevance_reason"}:
-            continue
-        if key == "source_urls":
-            existing = primary.setdefault("source_urls", [])
-            for url in value or []:
-                if url and url not in existing:
-                    existing.append(url)
+        if key in {"merged_from", "source_urls", "study_id", "relevance_status", "relevance_reason"}:
             continue
         current = primary.get(key)
         if (current is None or clean(current) == "") and value is not None and clean(value) != "":
