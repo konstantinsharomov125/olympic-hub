@@ -485,13 +485,15 @@ body {
   overflow: hidden;
 }
 
-/* Почему запись включена в каталог: компактная строка-обоснование. */
+/* Плашка-обоснование скрыта визуально (класс .visually-hidden в разметке),
+   но остаётся доступной скринридерам. Здесь — сброс оформления плашки,
+   чтобы она не занимала места в карточке (ни в сетке, ни в списке). */
 .relevance-evidence-line {
-  margin: 4px 0 6px;
-  padding: 4px 8px;
-  border-left: 3px solid #2E7D4F;
-  background: #F3F8F4;
-  border-radius: 3px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  border-radius: 0;
   font-size: 10.5px;
   line-height: 1.35;
   color: #24563A;
@@ -534,11 +536,6 @@ body {
 .gost-modal-text {
   overflow-wrap: anywhere;
   word-break: break-word;
-}
-
-/* В компактном списке обоснование скрываем, чтобы не перегружать вид. */
-.cards-list .relevance-evidence-line {
-  display: none;
 }
 
 .gost-citation-box {

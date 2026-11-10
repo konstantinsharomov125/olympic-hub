@@ -594,7 +594,7 @@ function renderCard(item) {
         <div class="summary-clamped">${escapeHtml(abstractText)}</div>
       </div>
 
-      ${evidence ? `<div class="relevance-evidence-line" title="Почему публикация включена в каталог">✓ ${escapeHtml(evidence)}</div>` : ''}
+      ${evidence ? `<div class="relevance-evidence-line visually-hidden" title="Почему публикация включена в каталог">✓ ${escapeHtml(evidence)}</div>` : ''}
 
       <div class="gost-citation-box">
         <div class="citation-label">📋 Библиографическая ссылка:</div>
