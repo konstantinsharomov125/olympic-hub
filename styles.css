@@ -485,6 +485,62 @@ body {
   overflow: hidden;
 }
 
+/* Почему запись включена в каталог: компактная строка-обоснование. */
+.relevance-evidence-line {
+  margin: 4px 0 6px;
+  padding: 4px 8px;
+  border-left: 3px solid #2E7D4F;
+  background: #F3F8F4;
+  border-radius: 3px;
+  font-size: 10.5px;
+  line-height: 1.35;
+  color: #24563A;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Полное объяснение в подробном просмотре. */
+.modal-evidence-box {
+  margin: 10px 0 14px;
+  padding: 10px 12px;
+  background: #F3F8F4;
+  border-left: 3px solid #2E7D4F;
+  border-radius: 4px;
+}
+
+.modal-evidence-box h4 {
+  margin: 0 0 6px;
+  color: #24563A;
+}
+
+.modal-evidence-list {
+  margin: 0 0 6px 18px;
+  padding: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-main);
+  overflow-wrap: anywhere;
+}
+
+.modal-evidence-list li {
+  margin-bottom: 3px;
+}
+
+/* Длинные названия и аннотации не должны ломать карточку. */
+.pub-card-title,
+.pub-author-row,
+.citation-text,
+.modal-title,
+.gost-modal-text {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* В компактном списке обоснование скрываем, чтобы не перегружать вид. */
+.cards-list .relevance-evidence-line {
+  display: none;
+}
+
 .gost-citation-box {
   margin-top: 8px;
   padding: 8px;

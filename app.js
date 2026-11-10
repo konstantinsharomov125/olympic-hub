@@ -245,7 +245,10 @@ function buildCitation(item) {
 /* ---------- Загрузка и инициализация ---------- */
 
 async function loadDataset() {
-  const candidates = ['public/web_data.json', 'generated/web_data.json', 'web_data.json'];
+  // public/web_data.json — единственный корректный публичный каталог.
+  // Легаси-массивы (generated/web_data.json, корневой web_data.json) содержат
+  // записи без тематической проверки и здесь намеренно не читаются.
+  const candidates = ['public/web_data.json'];
 
   for (const path of candidates) {
     try {
@@ -263,10 +266,24 @@ async function loadDataset() {
       }
 
       // Публичный каталог: только подтверждённые записи.
+      // Запись без relevance_evidence не могла пройти тематическую проверку —
+      // это признак устаревшего файла, а не каталога.
       rawData = records.filter((item) => {
-        const status = item && item.relevance_status;
-        return !status || status === 'accepted';
+        if (!item) return false;
+        const status = item.relevance_status;
+        if (status && status !== 'accepted') return false;
+        const evidence = item.relevance_evidence;
+        return Array.isArray(evidence) ? evidence.length > 0 : Boolean(evidence);
       });
+
+      if (records.length && !rawData.length) {
+        console.warn(
+          `Каталог ${path} не содержит обоснований включения (relevance_evidence). ` +
+          'Похоже, это устаревший файл. Используйте public/web_data.json.'
+        );
+        continue;
+      }
+
       filteredData = rawData.slice();
       return true;
     } catch (error) {
@@ -549,6 +566,7 @@ function renderCard(item) {
   const url = safeUrl(item.url);
   const citation = buildCitation(item);
   const safeKey = escapeHtml(key);
+  const evidence = evidenceSummary(item);
 
   return `
     <article class="pub-card">
@@ -576,6 +594,8 @@ function renderCard(item) {
         <div class="summary-clamped">${escapeHtml(abstractText)}</div>
       </div>
 
+      ${evidence ? `<div class="relevance-evidence-line" title="Почему публикация включена в каталог">✓ ${escapeHtml(evidence)}</div>` : ''}
+
       <div class="gost-citation-box">
         <div class="citation-label">📋 Библиографическая ссылка:</div>
         <div class="citation-text">${escapeHtml(citation)}</div>
@@ -587,6 +607,14 @@ function renderCard(item) {
         ${url ? `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" class="btn-link-original">Оригинал ↗</a>` : ''}
       </div>
     </article>`;
+}
+
+/* Объяснение включения записи: краткая строка для карточки. */
+function evidenceSummary(item) {
+  const evidence = Array.isArray(item.relevance_evidence) ? item.relevance_evidence : [];
+  if (!evidence.length) return '';
+  const first = String(evidence[0] || '').replace(/\s+/g, ' ').trim();
+  return first.length > 150 ? first.slice(0, 147) + '…' : first;
 }
 
 function renderPagination(totalPages) {
@@ -694,6 +722,24 @@ function openModal(item) {
   setText('modal-country', normalizeCountry(item.country) || 'не указана');
   setText('modal-abstract', abstractText);
   setText('modal-citation', buildCitation(item));
+
+  // Почему публикация включена в каталог: полное объяснение.
+  const evidenceBox = document.getElementById('modal-evidence');
+  const evidenceList = document.getElementById('modal-evidence-list');
+  if (evidenceBox && evidenceList) {
+    const evidence = Array.isArray(item.relevance_evidence) ? item.relevance_evidence : [];
+    evidenceList.innerHTML = '';
+    if (evidence.length) {
+      evidence.forEach((line) => {
+        const li = document.createElement('li');
+        li.textContent = String(line || '');
+        evidenceList.appendChild(li);
+      });
+      evidenceBox.style.display = '';
+    } else {
+      evidenceBox.style.display = 'none';
+    }
+  }
 
   const link = document.getElementById('modal-original-link');
   if (link) {
@@ -844,12 +890,16 @@ function csvCell(value) {
 
 function exportToCSV() {
   const headers = ['Направление', 'Название', 'Авторы', 'Год', 'Страна',
-                   'Тип документа', 'Язык', 'DOI', 'Ссылка', 'Ссылка (библиография)'];
+                   'Тип документа', 'Язык', 'DOI', 'Ссылка', 'Ссылка (библиография)',
+                   'Основание включения'];
 
   const rows = [headers.map(csvCell).join(';')];
 
   filteredData.forEach((item) => {
     const year = recordYear(item);
+    const evidence = Array.isArray(item.relevance_evidence)
+      ? item.relevance_evidence.join(' | ')
+      : '';
     rows.push([
       csvCell(item.category || 'Без категории'),
       csvCell(item.title_original || item.title || ''),
@@ -860,7 +910,8 @@ function exportToCSV() {
       csvCell(normalizeLanguage(item.language)),
       csvCell(item.doi || ''),
       csvCell(safeUrl(item.url)),
-      csvCell(buildCitation(item))
+      csvCell(buildCitation(item)),
+      csvCell(evidence)
     ].join(';'));
   });
 
