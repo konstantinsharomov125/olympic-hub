@@ -39,7 +39,8 @@
             
             <!-- Строка 1: Главный поиск -->
             <div class="search-row">
-                <input type="text" id="search-input" placeholder="🔍 Поиск по названию, авторам, аннотации...">
+                <label for="search-input" class="visually-hidden">Поиск по каталогу</label>
+                <input type="text" id="search-input" placeholder="🔍 Поиск по названию, авторам, аннотации..." autocomplete="off">
             </div>
 
             <!-- Строка 2: Выпадающие списки и управляющие кнопки -->
@@ -61,13 +62,13 @@
                 </select>
 
                 <div class="years-box">
-                    <span>Год:</span>
+                    <label for="year-from">Год:</label>
                     <input type="number" id="year-from" placeholder="1896">
                     <span>—</span>
                     <input type="number" id="year-to" placeholder="2026">
                 </div>
 
-                <button id="btn-fav-filter" class="btn-filter-fav">
+                <button id="btn-fav-filter" class="btn-filter-fav" aria-pressed="false">
                     ★ Избранное (<span id="fav-count">0</span>)
                 </button>
 
@@ -125,8 +126,8 @@
         <div class="toolbar-right">
             <div class="view-mode-group">
                 <span class="view-label">Вид:</span>
-                <button id="btn-view-grid" class="view-btn active" title="Сетка карточек">⊞ Сетка</button>
-                <button id="btn-view-list" class="view-btn" title="Компактный список">☰ Список</button>
+                <button id="btn-view-grid" class="view-btn active" type="button" aria-pressed="true" title="Сетка карточек">⊞ Сетка</button>
+                <button id="btn-view-list" class="view-btn" type="button" aria-pressed="false" title="Компактный список">☰ Список</button>
             </div>
         </div>
     </div>
@@ -144,22 +145,24 @@
     </main>
 
     <!-- Модальное окно просмотра аннотации -->
-    <div id="modal-view" class="modal-overlay">
+    <div id="modal-view" class="modal-overlay" role="dialog" aria-modal="true"
+         aria-labelledby="modal-title" aria-hidden="true">
         <div class="modal-content">
-            <button class="modal-close" id="modal-close">✕</button>
+            <button class="modal-close" id="modal-close" type="button" aria-label="Закрыть окно">✕</button>
             <h2 id="modal-title" class="modal-title">Название исследования</h2>
-            <p class="modal-meta"><span id="modal-authors">Авторы</span> (<span id="modal-year">2026</span>)</p>
+            <p class="modal-meta"><span id="modal-authors">Авторы</span> (<span id="modal-year">год не указан</span>)</p>
             <p class="modal-tags">
                 Направление: <strong id="modal-discipline">-</strong> | Тип: <strong id="modal-doctype">-</strong> | Страна: <strong id="modal-country">-</strong>
             </p>
             <div class="modal-body">
                 <h4>📌 Аннотация:</h4>
-                <p id="modal-abstract">Текст аннотации...</p>
-                <h4>📋 ГОСТ Р 7.0.100–2018:</h4>
+                <p id="modal-abstract">Аннотация не найдена в источнике</p>
+                <h4>📋 Библиографическая ссылка</h4>
+                <p class="modal-citation-hint">Формат принят в проекте; соответствие конкретному стандарту не заявлено.</p>
                 <p id="modal-citation" class="gost-modal-text"></p>
             </div>
             <div class="modal-footer">
-                <a id="modal-original-link" href="#" target="_blank" class="btn-primary-link">Оригинал публикации ↗</a>
+                <a id="modal-original-link" href="#" target="_blank" rel="noopener noreferrer" class="btn-primary-link">Оригинал публикации ↗</a>
             </div>
         </div>
     </div>

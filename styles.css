@@ -954,3 +954,174 @@ body {
     justify-content: center;
   }
 }
+
+/* Дополнения интерфейса: доступность, состояния, новые элементы карточек. */
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Видимый фокус для клавиатурной навигации */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--accent-gold, #B38A4B);
+  outline-offset: 2px;
+}
+
+/* Пустые состояния и ошибки загрузки */
+.state-box {
+  grid-column: 1 / -1;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  background: #FFFFFF;
+  border: 1px dashed #C9C2B6;
+  border-radius: 10px;
+  color: #4A4A4A;
+}
+
+.state-box h3 {
+  margin: 0 0 0.5rem;
+  font-family: Georgia, 'Times New Roman', serif;
+  color: var(--primary-navy, #10233F);
+  font-size: 1.05rem;
+}
+
+.state-box p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* Заголовок карточки как кнопка (доступность) */
+.pub-card-title {
+  margin: 0.35rem 0 0.5rem;
+}
+
+.link-like {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  display: inline;
+}
+
+.link-like:hover {
+  color: var(--secondary-navy, #29496B);
+  text-decoration: underline;
+}
+
+/* Звезда избранного */
+.btn-fav-star {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.15rem;
+  line-height: 1;
+  padding: 2px 4px;
+  color: #C9C2B6;
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.btn-fav-star:hover {
+  transform: scale(1.12);
+}
+
+.btn-fav-star.is-favorite {
+  color: var(--accent-gold, #B38A4B);
+}
+
+/* Активное состояние фильтра избранного */
+.btn-filter-fav.is-active {
+  background-color: var(--primary-navy, #10233F);
+  color: #FFFDF9;
+  border-color: var(--primary-navy, #10233F);
+}
+
+/* Подписи блоков карточки */
+.summary-label,
+.citation-label {
+  font-weight: 600;
+  color: var(--primary-navy, #10233F);
+  margin-bottom: 3px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.citation-text {
+  font-style: italic;
+  line-height: 1.35;
+  margin-bottom: 5px;
+  word-break: break-word;
+}
+
+.btn-copy {
+  background: #FFFFFF;
+  border: 1px solid #C9C2B6;
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--secondary-navy, #29496B);
+  cursor: pointer;
+}
+
+.btn-copy:hover {
+  background: #F4F1EA;
+}
+
+/* Пагинация */
+.page-gap {
+  padding: 0 4px;
+  color: #8A8578;
+}
+
+/* Модальное окно: открытие через класс, а не inline-стили */
+.modal-overlay {
+  display: none;
+}
+
+.modal-overlay.is-open {
+  display: flex;
+}
+
+body.modal-open {
+  overflow: hidden;
+}
+
+.modal-citation-hint {
+  font-size: 10px;
+  color: #8A8578;
+  margin: 0 0 4px;
+  font-style: normal;
+}
+
+/* Компактный список: скрываем длинные блоки */
+.cards-list .ai-summary-box .summary-clamped,
+.cards-list .gost-citation-box {
+  display: none;
+}
+
+/* Уважение к предпочтениям по анимации */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
