@@ -233,14 +233,29 @@ def run(
 
     accepted, rejected, review = split_by_relevance(unique)
 
+    # Записи с невозможным годом не публикуются, но и не удаляются:
+    # они переходят в review, чтобы год можно было проверить вручную.
+    accepted_clean: list[dict] = []
+    year_moved = 0
+    for record in accepted:
+        if record.get("year_status") == "invalid":
+            record["review_note"] = record.get("year_reason") or "Год требует проверки"
+            review.append(record)
+            year_moved += 1
+        else:
+            accepted_clean.append(record)
+    accepted = accepted_clean
+
     fake_removed = sum(1 for rec in unique if rec.get("abstract_removed_fake"))
 
     report = build_relevance_report(
         accepted, rejected, review, duplicates, total_input, fake_removed
     )
+    report["moved_to_review_by_year"] = year_moved
 
     write_outputs(accepted, rejected, review, report, out_dir=out_dir, source=source)
     return report
+
 
 
 def _load_source(path: Path) -> list[dict]:
