@@ -141,6 +141,28 @@ def norm_text(value: Any) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
+#: Кириллические и латинские буквы, которые выглядят одинаково.
+#: При сравнении названий (дедупликация) они приводятся к латинице,
+#: чтобы «Oлимпийское» и «Olympic» совпадали по символам.
+_CYRILLIC_HOMOGLYPHS = str.maketrans(
+    {
+        "а": "a", "е": "e", "о": "o", "р": "p", "с": "c", "у": "y", "х": "x",
+        "к": "k", "м": "m", "т": "t", "в": "b", "н": "h", "і": "i", "ј": "j",
+        "ѕ": "s", "ԁ": "d", "ԛ": "q", "ԝ": "w",
+    }
+)
+
+
+def norm_key(value: Any) -> str:
+    """Ключ сравнения: ``norm_text`` + нормализация гомоглифов.
+
+    Используется только для дедупликации, исходные поля не меняются.
+    """
+    text = norm_text(value)
+    return text.translate(_CYRILLIC_HOMOGLYPHS)
+
+
+
 _DOI_PREFIX = re.compile(r"^(?:https?://(?:dx\.)?doi\.org/|doi:\s*)", re.I)
 
 
@@ -153,6 +175,60 @@ def norm_doi(value: Any) -> str:
 def doi_url(doi: Any) -> str:
     normalized = norm_doi(doi)
     return f"https://doi.org/{normalized}" if normalized else ""
+
+
+# --------------------------------------------------------------------------
+# ISBN (книжные издания)
+# --------------------------------------------------------------------------
+
+_ISBN_PREFIX = re.compile(r"^\s*(?:isbn(?:-1[03])?\s*:?\s*)", re.I)
+
+
+def norm_isbn(value: Any) -> str:
+    """Приводит ISBN к цифровой форме (10 или 13 знаков) с сохранением X."""
+    text = _ISBN_PREFIX.sub("", clean(value))
+    digits = re.sub(r"[^0-9xX]", "", text).upper()
+    if len(digits) in (10, 13):
+        return digits
+    return ""
+
+
+def isbn_from_identifiers(*values: Any) -> str:
+    """Ищет ISBN среди идентификаторов (URL, DOI-подобных строк, примечаний).
+
+    Проверка строгая: цифры ISBN-10/13 сливаются и валидируются контрольной
+    суммой, чтобы номер года или страница не были приняты за ISBN.
+    """
+    for value in values:
+        text = clean(value)
+        if not text:
+            continue
+        for run in re.findall(r"\d[\dXx-]{8,20}\d", text):
+            candidate = norm_isbn(run)
+            if not candidate:
+                continue
+            if len(candidate) == 13 and _isbn13_valid(candidate):
+                return candidate
+            if len(candidate) == 10 and _isbn10_valid(candidate):
+                return candidate
+    return ""
+
+
+def _isbn10_valid(value: str) -> bool:
+    total = sum((10 - index) * (10 if char == "X" else int(char)) for index, char in enumerate(value))
+    return total % 11 == 0
+
+
+def _isbn13_valid(value: str) -> bool:
+    total = sum((1 if index % 2 == 0 else 3) * int(char) for index, char in enumerate(value))
+    return total % 10 == 0
+
+
+
+def is_doi_like(value: Any) -> bool:
+    """DOI начинается с префикса ``10.``."""
+    return bool(re.match(r"^10\.\d{4,9}/\S+$", norm_doi(value)))
+
 
 
 # --------------------------------------------------------------------------
@@ -174,6 +250,33 @@ class YearVerdict:
 
     def __repr__(self) -> str:  # pragma: no cover
         return f"YearVerdict(year={self.year!r}, status={self.status!r}, reason={self.reason!r})"
+
+
+class ScreenedYear:
+    """Год после сверки поля и идентификатора.
+
+    ``status``: ``ok`` — год подтверждён; ``review`` — года нет;
+    ``conflict`` — поле и DOI/URL расходятся, нужен человек.
+    """
+
+    __slots__ = ("year", "source", "status", "reason")
+
+    def __init__(self, year: int | None, source: str, reason: str) -> None:
+        self.year = year
+        self.source = source
+        self.reason = reason
+        # Порядок важен: расхождение и невозможный год важнее наличия числа.
+        if source == "conflict":
+            self.status = "conflict"
+        elif source == "invalid":
+            self.status = "invalid"
+        elif year is None:
+            self.status = "review"
+        else:
+            self.status = "ok"
+
+    def __repr__(self) -> str:  # pragma: no cover
+        return f"ScreenedYear(year={self.year!r}, source={self.source!r}, status={self.status!r})"
 
 
 def parse_year(value: Any) -> int | None:
@@ -201,6 +304,64 @@ def check_year(value: Any, *, current_year: int | None = None) -> YearVerdict:
     if year > current:
         return YearVerdict(year, "invalid", f"Год {year} в будущем (текущий {current})")
     return YearVerdict(year, "ok", "")
+
+
+# --------------------------------------------------------------------------
+# Год, подтверждённый источником
+# --------------------------------------------------------------------------
+
+#: Годы, которые не могут быть датой публикации внутри публикации:
+#: это либо ссылки в списке литературы, либо диапазоны «Игры 2016».
+_YEAR_TOKEN = re.compile(r"(?<![\d.])(1[89]\d{2}|20\d{2})(?![\d])")
+
+
+def years_in_text(text: Any) -> list[int]:
+    return [int(m.group(1)) for m in _YEAR_TOKEN.finditer(clean(text))]
+
+
+def resolve_year(record: Mapping[str, Any], *, current_year: int | None = None) -> ScreenedYear:
+    """Определяет год публикации и объясняет, откуда он взят.
+
+    Правила:
+      * поле ``year`` — основной источник, если значение допустимо;
+      * если его нет, недопустимо оно или противоречит году в DOI/URL,
+        год берётся из идентификатора (там он реально напечатан);
+      * ничего не угадывается: при отсутствии подтверждений возвращается
+        статус ``review``, и запись в публичный каталог не попадает.
+
+    ``year_source``: ``field`` — из поля, ``doi`` — из DOI/URL,
+    ``missing`` — нет года, ``conflict`` — поле и идентификатор расходятся.
+    """
+    current = current_year or datetime.now(timezone.utc).year
+    field_value = clean(record.get("year") or record.get("publication_year"))
+    field_verdict = check_year(field_value, current_year=current)
+
+    identifier = clean(record.get("doi")) or clean(record.get("url"))
+    identifier_years = [
+        year for year in years_in_text(identifier) if OLYMPIC_FIRST_YEAR <= year <= current
+    ]
+    id_year = identifier_years[0] if len(set(identifier_years)) == 1 else None
+
+    if field_verdict.status == "ok":
+        if id_year is not None and id_year != field_verdict.year:
+            return ScreenedYear(
+                field_verdict.year,
+                "conflict",
+                f"Год в поле {field_verdict.year} расходится с годом в DOI/URL ({id_year})",
+            )
+        return ScreenedYear(field_verdict.year, "field", "")
+
+    if id_year is not None:
+        return ScreenedYear(
+            id_year,
+            "doi",
+            f"Год взят из DOI/URL: {id_year}. Поле «year» = {field_value or 'пусто'}",
+        )
+
+    if field_verdict.status == "invalid":
+        return ScreenedYear(field_verdict.year, "invalid", field_verdict.reason)
+    return ScreenedYear(None, "missing", field_verdict.reason)
+
 
 
 # --------------------------------------------------------------------------

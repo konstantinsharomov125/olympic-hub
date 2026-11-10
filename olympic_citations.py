@@ -17,7 +17,7 @@ import re
 from datetime import date, datetime
 from typing import Any, Mapping, Sequence
 
-from olympic_hub_core import check_year, clean, doi_url, norm_doi
+from olympic_hub_core import check_year, clean, doi_url, is_doi_like, norm_doi
 
 #: Подписи, которые нельзя показывать как источник.
 FORBIDDEN_CONTAINERS = frozenset(
@@ -38,30 +38,121 @@ FORBIDDEN_CONTAINERS = frozenset(
     }
 )
 
-_INITIALS_RE = re.compile(r"^[А-ЯЁA-Z](?:\.[А-ЯЁA-Z]?\.?)?$")
+_INITIALS_RE = re.compile(r"^[А-ЯЁA-Z](?:\.?[А-ЯЁA-Z]?\.?)?$")
 _CYRILLIC_RE = re.compile(r"[А-Яа-яЁё]")
+#: Слова, которые не являются фамилией автора.
+_NOT_AUTHOR = frozenset(
+    {"nr", "n/a", "na", "нет", "автор не указан", "неизвестен", "unknown", "anon", "anonymous"}
+)
 
 
 def is_forbidden_container(value: Any) -> bool:
     return clean(value).lower().strip(" .") in FORBIDDEN_CONTAINERS
 
 
+def has_author(raw: Any) -> bool:
+    """Есть ли в записи реальный автор (заглушки не считаются)."""
+    for entry in split_authors(raw):
+        if _name_parts(entry)[0]:
+            return True
+    return False
+
+
+def _split_two_authors(text: str) -> list[str]:
+    """«Иванов И. И. Петров П. П.» → два автора (без запятых между ними)."""
+    pattern = re.compile(
+        r"(.+?[А-ЯЁA-Z][а-яёa-z-]+(?:\s+(?:[А-ЯЁA-Z]\.){1,3})?)"
+        r"(?=\s+[А-ЯЁA-Z][а-яёa-z-]+(?:\s+(?:[А-ЯЁA-Z]\.){1,3})?\s*$)"
+    )
+    found = pattern.findall(text)
+    if len(found) == 2 and all(len(part.split()) >= 2 for part in found):
+        return [part.strip() for part in found]
+    return []
+
+
 def split_authors(raw: Any) -> list[str]:
-    """Разбивает строку авторов на отдельные имена."""
+    """Разбивает строку авторов на отдельные имена.
+
+    Поддерживаются форматы:
+      * ``Gogovor A., Savoie M., Moride Y.`` — через запятую;
+      * ``Финогенов А. А., Е. И. Фролов`` — инициалы перед фамилией;
+      * ``Фамилия, И. О.; Другая, П. К.`` — через точку с запятой;
+      * ``Иванов И. И. Петров П. П.`` — без разделителей;
+      * ``Gogovor A.`` / ``A. Gogovor`` / ``A Gogovor``.
+
+    Запятая ВНУТРИ имени («Фамилия, И. О.») не считается разделителем.
+    """
+    if isinstance(raw, (list, tuple)):
+        items = [clean(x) for x in raw if clean(x)]
+        return [x for x in items if x.lower().strip(" .") not in _NOT_AUTHOR]
+
     text = clean(raw)
     if not text:
         return []
-    if isinstance(raw, (list, tuple)):
-        return [clean(x) for x in raw if clean(x)]
-    # Точка с запятой надёжнее запятой: «Фамилия, И. О.; Другая, П. К.»
+    if text.lower().strip(" .") in _NOT_AUTHOR:
+        return []
+
+    text = re.sub(r"\s+", " ", text.replace("&", ";")).strip(" ;,")
+
     if ";" in text:
         parts = text.split(";")
-    elif re.search(r"[А-ЯЁA-Z][а-яёa-z]+,\s*[А-ЯЁA-Z]\.", text):
-        parts = re.split(r",\s*(?=[А-ЯЁA-Z][а-яёa-z]+(?:,|\s|$))", text)
     else:
-        parts = text.split(",")
-    result = [clean(p).rstrip(".") for p in parts]
-    return [p for p in result if p and p.lower() not in {"nr", "n/a", "нет"}]
+        parts = _split_by_commas(text)
+
+    result: list[str] = []
+    for part in parts:
+        cleaned = clean(part).strip(" ,;")
+        if not cleaned:
+            continue
+        if cleaned.lower().strip(" .") in _NOT_AUTHOR:
+            continue
+        result.append(cleaned)
+    return result
+
+
+def _split_by_commas(text: str) -> list[str]:
+    """Делит по запятым, не разрывая «Фамилия, И. О.» и «Gogovor A., Savoie M.»."""
+    # 1. «Фамилия, И. О.» — запятая внутри одной записи автора.
+    inside = re.compile(
+        r"([А-ЯЁA-Z][а-яёa-z-]+),\s*((?:[А-ЯЁA-Z]\.\s*(?:[А-ЯЁA-Z]\.\s*)?)+)"
+    )
+    # 2. «IVANOV, Ivan Ivanovich» — запятая между фамилией и полным именем.
+    full_name = re.compile(
+        r"^([А-ЯЁA-Z][а-яёa-z-]+),\s*([А-ЯЁA-Z][а-яёa-z-]+(?:\s+[А-ЯЁA-Z][а-яёa-z-]+)+)$"
+    )
+    if full_name.match(text.strip()):
+        return [text.strip()]
+
+    if inside.search(text) and not re.search(r",\s*[А-ЯЁA-Z]\.", text):
+        parts = [m.group(1) + " " + m.group(2).strip() for m in inside.finditer(text)]
+        if parts:
+            return parts
+
+    parts = [p for p in re.split(r",\s*", text) if p.strip()]
+
+    merged: list[str] = []
+    for part in parts:
+        part = part.strip()
+        # Отдельно стоящие инициалы принадлежат предыдущей записи.
+        if merged and re.fullmatch(r"(?:[А-ЯЁA-Z]\.\s*){1,3}", part):
+            merged[-1] = f"{merged[-1]} {part}"
+            continue
+        # Предыдущая запись закончилась инициалами — новый автор не при чём.
+        merged.append(part)
+
+    # «Иванов И. И. Петров П. П.» — два автора без разделителя.
+    expanded: list[str] = []
+    for part in merged:
+        if len(part.split()) >= 4 and re.search(r"[А-ЯЁA-Z]\.", part):
+            pair = _split_two_authors(part)
+            if pair:
+                expanded.extend(pair)
+                continue
+        expanded.append(part)
+
+    return expanded
+
+
 
 
 def _name_parts(entry: str) -> tuple[str, list[str]]:
@@ -77,6 +168,11 @@ def _name_parts(entry: str) -> tuple[str, list[str]]:
         initials = re.findall(r"[А-ЯЁA-Z]", match.group(2))
         return surname, initials
 
+    # Форма «Фамилия И О» (инициалы без точек, как в части источников).
+    match = re.match(r"^([^.\s]+)\s+([А-ЯЁA-Z](?:\s+[А-ЯЁA-Z]){0,2})$", text)
+    if match and len(match.group(2).replace(" ", "")) <= 3:
+        return match.group(1).strip(), list(match.group(2).replace(" ", ""))
+
     # Форма «И.О. Фамилия»
     match = re.match(r"^((?:[А-ЯЁA-Z]\.\s*){1,3})\s*(.+)$", text)
     if match:
@@ -88,7 +184,9 @@ def _name_parts(entry: str) -> tuple[str, list[str]]:
         initials = [p.replace(".", "")[:1] for p in parts[1:]]
         return parts[0], initials
 
+    # «Фамилия, И. О.» — запятая уже убрана, но инициалы могли остаться.
     return text, []
+
 
 
 def format_first_author(entry: str) -> str:
@@ -120,11 +218,23 @@ def format_access_date(moment: date | datetime | None = None) -> str:
 
 
 def _resolve_url(record: Mapping[str, Any]) -> str:
+    """Приоритет: DOI → URL. Нестандартный, но подтверждённый URL сохраняется."""
+    doi = norm_doi(record.get("doi"))
+    if is_doi_like(doi):
+        return doi_url(doi)
     url = clean(record.get("url"))
     if url.startswith(("http://", "https://")):
         return url
-    doi = norm_doi(record.get("doi"))
-    return doi_url(doi) if doi else ""
+    return ""
+
+
+def _resolve_container(record: Mapping[str, Any]) -> str:
+    """Реальный источник публикации: контейнер, журнал или выпуск."""
+    for key in ("container", "journal", "source_title", "publication"):
+        value = clean(record.get(key))
+        if value and not is_forbidden_container(value):
+            return value
+    return ""
 
 
 def build_citation(
@@ -132,15 +242,13 @@ def build_citation(
     *,
     moment: date | datetime | None = None,
 ) -> str:
-    """Собирает библиографическую ссылку.
+    """Собирает библиографическую ссылку по принятому в проекте формату.
 
-    Неизвестные части опускаются. Если данных почти нет, возвращается
-    честная неполная ссылка без вымышленных элементов.
+    Неизвестные части опускаются. Если автора нет, ссылка начинается с
+    названия — фиктивное «Автор не указан» не печатается.
     """
     title = clean(record.get("title_original") or record.get("title"))
-    container = clean(record.get("container") or record.get("source"))
-    if is_forbidden_container(container):
-        container = ""
+    container = _resolve_container(record)
 
     authors = split_authors(record.get("authors") or record.get("author"))
 
@@ -152,7 +260,10 @@ def build_citation(
 
     parts: list[str] = []
 
-    # Блок 1: авторы и название.
+    # Блок 1: авторы и название. Без автора — сразу название.
+    head = ""
+    if title:
+        head = title
     if authors:
         first = format_first_author(authors[0])
         rest = [format_other_author(a) for a in authors[1:]]
@@ -161,11 +272,8 @@ def build_citation(
             head = f"{first}. {title}" if title else f"{first}."
             if rest:
                 head += " / " + ", ".join(rest)
-            parts.append(head)
-        elif title:
-            parts.append(title)
-    elif title:
-        parts.append(title)
+    if head:
+        parts.append(head)
 
     # Блок 2: источник публикации (только если известен).
     if container:
@@ -183,15 +291,10 @@ def build_citation(
         return "Недостаточно данных для формирования ссылки"
 
     result = parts[0]
-    for index, chunk in enumerate(parts[1:], start=1):
+    for chunk in parts[1:]:
         # Перед блоком журнала уже стоит «//», поэтому «. – » не дублируем.
-        if chunk.startswith("//"):
-            result += " " + chunk
-        else:
-            result += ". – " + chunk
+        result += " " + chunk if chunk.startswith("//") else ". – " + chunk
     return result
-
-
 
 
 def has_forbidden_stub(record: Mapping[str, Any]) -> bool:
