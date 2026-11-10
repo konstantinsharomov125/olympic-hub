@@ -1,0 +1,43 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+build/
+dist/
+
+# --- Виртуальное окружение ---
+.venv/
+venv/
+env/
+ENV/
+
+# --- Секреты и локальные настройки ---
+.env
+.env.*
+!.env.example
+secrets/
+*.pem
+*.key
+.vk_token
+config.local.json
+
+# --- Временные файлы ---
+*.tmp
+*.log
+*.bak
+~$*
+.DS_Store
+Thumbs.db
+
+# --- Служебные файлы проверок ---
+_*.py
+_*.txt
+_probe*.txt
+
+# ВАЖНО: данные проекта НЕ игнорируются.
+# public/, generated/, data/ и scripts/ должны оставаться в репозитории.

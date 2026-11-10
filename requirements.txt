@@ -1,0 +1,21 @@
+# Зависимости Olympic Research Hub.
+# Установка: pip install -r requirements.txt
+
+# --- Обязательные для сборочного pipeline ---
+# (сборка каталога не требует сторонних библиотек, только стандартную библиотеку Python)
+
+# --- Перевод аннотаций (scripts/ai_summarizer.py) ---
+deep-translator==1.11.4
+
+# --- Бот сообщества ВКонтакте (scripts/vk_bot.py) ---
+vk-api==11.9.9
+
+# --- Необязательно: AI-классификация (classify_with_ai.py) ---
+# google-genai==1.0.0
+
+# --- Необязательно: локальные эмбеддинги (classify_local_vector.py) ---
+# sentence-transformers==3.0.1
+# numpy==1.26.4
+
+# --- Тестирование ---
+pytest==8.3.3

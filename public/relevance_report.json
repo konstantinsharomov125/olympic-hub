@@ -1,0 +1,209 @@
+{
+  "input_records": 1639,
+  "accepted": 1369,
+  "rejected": 4,
+  "review": 176,
+  "subject_olympiad": 22,
+  "duplicates_merged": 68,
+  "fake_abstracts_removed": 0,
+  "abstracts_cleaned": 99,
+  "accepted_without_evidence": 0,
+  "accepted_without_year": 0,
+  "accepted_missing_abstract": 832,
+  "accepted_truncated_abstract": 35,
+  "accepted_topics": {
+    "Олимпийские игры": 1255,
+    "Олимпийское движение и МОК": 282,
+    "олимпийское образование": 247,
+    "олимпизм и олимпийские ценности": 191,
+    "паралимпийское движение": 105,
+    "олимпийское наследие": 88,
+    "антидопинговая политика и WADA": 57,
+    "олимпийская философия и история": 45
+  },
+  "years_sources": {
+    "field": 1422,
+    "conflict": 65,
+    "missing": 55,
+    "doi": 3
+  },
+  "examples_rejected": [
+    {
+      "study_id": "OLY-1534",
+      "title": "Prosthodontic Olympics: Gaming To Aid Students Gain Proficiency.",
+      "reason": "Тематика не относится к олимпизму: стоматология"
+    },
+    {
+      "study_id": "OLY-1560",
+      "title": "Gold Medal! An Event-Based Science Module. Student Edition. Physiology Module.",
+      "reason": "В названии и аннотации нет признаков олимпийской тематики"
+    },
+    {
+      "study_id": "OLY-1567",
+      "title": "Gold Medal!: An Event-Based Science Module. Teacher's Guide. Physiology Module.",
+      "reason": "В названии и аннотации нет признаков олимпийской тематики"
+    },
+    {
+      "study_id": "OLY-1597",
+      "title": "Wither the Plurality of Decolonising the Curriculum? Safe Spaces and Identitarian Politics in the Arts and Humanities Cl",
+      "reason": "В названии и аннотации нет признаков олимпийской тематики"
+    }
+  ],
+  "examples_review": [
+    {
+      "study_id": "OLY-0139",
+      "title": "Olympic Dances by John Harbison, a Lecture Recital together with Three Recitals of Selected Works of D. Holsinger, P. Gr",
+      "reason": "Упоминается спорт или «движение», но связь с олимпийским движением не подтверждена"
+    },
+    {
+      "study_id": "OLY-0646",
+      "title": "Olympic Gold",
+      "reason": "Упоминается спорт или «движение», но связь с олимпийским движением не подтверждена"
+    },
+    {
+      "study_id": "OLY-0739",
+      "title": "International sporting events and human rights : does the host nation play fair?",
+      "reason": "Упоминается спорт или «движение», но связь с олимпийским движением не подтверждена"
+    },
+    {
+      "study_id": "OLY-1358",
+      "title": "Education, Women and the Olympics.",
+      "reason": "Упоминается спорт или «движение», но связь с олимпийским движением не подтверждена"
+    },
+    {
+      "study_id": "OLY-1373",
+      "title": "Disaster Preparedness: Lessons from the 2002 Salt Lake City Olympics.",
+      "reason": "Упоминается спорт или «движение», но связь с олимпийским движением не подтверждена"
+    },
+    {
+      "study_id": "OLY-1478",
+      "title": "Olympics in Mathematics",
+      "reason": "Упоминается спорт или «движение», но связь с олимпийским движением не подтверждена"
+    },
+    {
+      "study_id": "OLY-1480",
+      "title": "Tuning in to the Olympics.",
+      "reason": "Упоминается спорт или «движение», но связь с олимпийским движением не подтверждена"
+    },
+    {
+      "study_id": "OLY-1484",
+      "title": "Review of \"Education Olympics 2008: The Games in Review\"",
+      "reason": "Упоминается спорт или «движение», но связь с олимпийским движением не подтверждена"
+    },
+    {
+      "study_id": "OLY-1494",
+      "title": "The 1980 Olympics: A Schoolwide TV-Reading Project.",
+      "reason": "Упоминается спорт или «движение», но связь с олимпийским движением не подтверждена"
+    },
+    {
+      "study_id": "OLY-1498",
+      "title": "Gold Mettle",
+      "reason": "Упоминается спорт или «движение», но связь с олимпийским движением не подтверждена"
+    },
+    {
+      "study_id": "OLY-1503",
+      "title": "Make A Splash: Tracking the Summer Olympics.",
+      "reason": "Упоминается спорт или «движение», но связь с олимпийским движением не подтверждена"
+    },
+    {
+      "study_id": "OLY-1508",
+      "title": "The VICA U.S. Skill Olympics",
+      "reason": "Упоминается спорт или «движение», но связь с олимпийским движением не подтверждена"
+    }
+  ],
+  "examples_subject_olympiad": [
+    {
+      "study_id": "OLY-1463",
+      "title": "On Your Mark, Get Set - For a Metric Olympics",
+      "reason": "Речь идёт о школьной или предметной олимпиаде, а не об Олимпийских играх"
+    },
+    {
+      "study_id": "OLY-1479",
+      "title": "The New Jersey Chemistry Olympics. A Competition for High School Science Students.",
+      "reason": "Речь идёт о школьной или предметной олимпиаде, а не об Олимпийских играх"
+    },
+    {
+      "study_id": "OLY-1481",
+      "title": "Get Set for the Winter Reading Olympics.",
+      "reason": "Речь идёт о школьной или предметной олимпиаде, а не об Олимпийских играх"
+    },
+    {
+      "study_id": "OLY-1493",
+      "title": "Olympics of the Mind as a Method to Identify Giftedness: Soviet and Russian Experience",
+      "reason": "Речь идёт о школьной или предметной олимпиаде, а не об Олимпийских играх"
+    },
+    {
+      "study_id": "OLY-1497",
+      "title": "Physics Olympics Celebrates Silver Anniversary.",
+      "reason": "Речь идёт о школьной или предметной олимпиаде, а не об Олимпийских играх"
+    },
+    {
+      "study_id": "OLY-1499",
+      "title": "OM: A Program for the Creatively Gifted Student.",
+      "reason": "Речь идёт о школьной или предметной олимпиаде, а не об Олимпийских играх"
+    },
+    {
+      "study_id": "OLY-1500",
+      "title": "Physics Olympics: Competitions for Secondary Physics Students",
+      "reason": "Речь идёт о школьной или предметной олимпиаде, а не об Олимпийских играх"
+    },
+    {
+      "study_id": "OLY-1504",
+      "title": "A Spelling Olympics.",
+      "reason": "Речь идёт о школьной или предметной олимпиаде, а не об Олимпийских играх"
+    },
+    {
+      "study_id": "OLY-1506",
+      "title": "Enhancing Student Motivation and Learning Engagement in Physics through Science Olympics",
+      "reason": "Речь идёт о школьной или предметной олимпиаде, а не об Олимпийских играх"
+    },
+    {
+      "study_id": "OLY-1507",
+      "title": "Gifted and Talented Education Program. E.C.I.A. Chapter 2. Final Evaluation Report.",
+      "reason": "Речь идёт о школьной или предметной олимпиаде, а не об Олимпийских играх"
+    },
+    {
+      "study_id": "OLY-1510",
+      "title": "The Biology Olympics.",
+      "reason": "Речь идёт о школьной или предметной олимпиаде, а не об Олимпийских играх"
+    },
+    {
+      "study_id": "OLY-1521",
+      "title": "Celebrating Math--Olympic Style!",
+      "reason": "Речь идёт о школьной или предметной олимпиаде, а не об Олимпийских играх"
+    }
+  ],
+  "similar_unmerged_pairs": [
+    {
+      "a": "OLY-1305",
+      "b": "OLY-1445",
+      "title_a": "The Olympics: An Educational Opportunity. Enrichment Units, 7-9.",
+      "title_b": "The Olympics: An Educational Opportunity. Enrichment Units, K-6.",
+      "year": "1978"
+    },
+    {
+      "a": "OLY-2904",
+      "b": "OLY-2907",
+      "title_a": "II. The Olympic Games in Ancient Times",
+      "title_b": "III. The Olympic Games in Ancient Times",
+      "year": "1898"
+    },
+    {
+      "a": "OLY-5084",
+      "b": "OLY-5109",
+      "title_a": "Public health surveillance during the Sydney 2000 Olympic and Paralympic Games.",
+      "title_b": "Health surveillance during the Sydney 2000 Olympic and Paralympic Games.",
+      "year": "2000"
+    }
+  ],
+  "similar_unmerged_total": 3,
+  "moved_to_review_by_year": 117,
+  "moved_to_review_by_evidence": 0,
+  "rejected_by_structure": 0,
+  "status_summary": {
+    "accepted": 1369,
+    "rejected": 4,
+    "review": 176,
+    "subject_olympiad": 22
+  }
+}

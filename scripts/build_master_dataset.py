@@ -26,6 +26,14 @@ import urllib.request
 from collections import Counter
 from pathlib import Path
 
+import sys as _sys
+from pathlib import Path as _Path
+_root = _Path(__file__).resolve().parents[1]
+if str(_root) not in _sys.path:
+    _sys.path.insert(0, str(_root))
+
+from olympic_hub_core import dump_envelope, make_envelope  # noqa: E402
+
 DEFAULT_URL = (
     "https://docs.google.com/spreadsheets/d/e/"
     "2PACX-1vSxNFzNuMUtkeLmD7i8VVSA8vLYqtRE4WrIeqS_BM3UmMBSwz93mEs_EXav9F5LAw/"
@@ -157,16 +165,13 @@ def main() -> int:
         w.writerows(master)
 
     from datetime import datetime, timezone
-    web_payload = {
-        "metadata": {
-            "generated_at_utc": datetime.now(timezone.utc).isoformat(),
-            "record_count": len(master),
-            "source": "published Google Sheets CSV"
-        },
-        "data": web_projection(master)
-    }
-    with (out_dir / "web_data.json").open("w", encoding="utf-8") as f:
-        json.dump(web_payload, f, ensure_ascii=False, separators=(",", ":"))
+    web_payload = make_envelope(
+        web_projection(master),
+        source="published Google Sheets CSV",
+        generated_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        extra={"catalog_name": "Олимпийский исследовательский портал"},
+    )
+    dump_envelope(web_payload, out_dir / "web_data.json")
 
     with (out_dir / "data_quality_report.csv").open("w", newline="", encoding="utf-8-sig") as f:
         w = csv.writer(f)
