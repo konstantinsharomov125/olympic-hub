@@ -1,6 +1,13 @@
 """Тесты научной релевантности каталога."""
 
-from olympic_relevance import ACCEPTED, REJECTED, REVIEW, assess_relevance, split_by_relevance
+from olympic_relevance import (
+    ACCEPTED,
+    REJECTED,
+    REVIEW,
+    SUBJECT_OLYMPIAD,
+    assess_relevance,
+    split_by_relevance,
+)
 
 
 def test_clearly_olympic_accepted(olympic_record):
@@ -104,11 +111,14 @@ def test_split_by_relevance_partitions_records():
         {"title_original": "Breaking the obesity-cancer link", "study_id": "b"},
         {"title_original": "Sport Event Branding", "study_id": "c"},
     ]
-    accepted, rejected, review = split_by_relevance(records)
+    accepted, rejected, review, subject = split_by_relevance(records)
 
-    assert len(accepted) + len(rejected) + len(review) == 3
+    total = len(accepted) + len(rejected) + len(review) + len(subject)
+    assert total == 3
     assert all(r["relevance_status"] == ACCEPTED for r in accepted)
     assert all(r["relevance_status"] == REJECTED for r in rejected)
     assert all(r["relevance_status"] == REVIEW for r in review)
+    assert all(r["relevance_status"] == SUBJECT_OLYMPIAD for r in subject)
     # Исходные записи сохраняются, а не теряются.
-    assert {r["study_id"] for r in accepted + rejected + review} == {"a", "b", "c"}
+    ids = {r["study_id"] for r in accepted + rejected + review + subject}
+    assert ids == {"a", "b", "c"}
