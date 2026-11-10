@@ -1,8 +1,8 @@
 {
   "input_records": 1556,
-  "accepted": 1432,
+  "accepted": 670,
   "rejected": 28,
-  "review": 96,
+  "review": 858,
   "duplicates_merged": 0,
   "fake_abstracts_removed": 1104,
   "examples_rejected": [
@@ -104,5 +104,6 @@
       "title": "Between Rock and Stone: Embodiement, Disorientation and the Queering of Climbing Spaces",
       "reason": "Упоминается спорт, но связь с олимпийским движением не подтверждена"
     }
-  ]
+  ],
+  "moved_to_review_by_year": 762
 }

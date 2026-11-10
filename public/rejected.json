@@ -1,7 +1,7 @@
 {
   "metadata": {
     "schema_version": 2,
-    "generated_at_utc": "2026-11-10T17:26:10+00:00",
+    "generated_at_utc": "2026-11-10T17:29:05+00:00",
     "source": "build_dataset.py <- web_data.json",
     "record_count": 28,
     "note": "отклонено как нерелевантное"

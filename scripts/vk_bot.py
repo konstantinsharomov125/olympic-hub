@@ -1,174 +1,239 @@
-import json
-import os
-import re
-import random
+"""Бот сообщества ВКонтакте для Олимпийского исследовательского портала.
+
+Требования безопасности:
+  * токен читается ТОЛЬКО из переменной окружения ``VK_GROUP_TOKEN``;
+  * встроенных значений по умолчанию нет;
+  * при отсутствии токена бот завершается с понятным сообщением
+    и не пытается авторизоваться;
+  * значение токена никогда не пишется в логи.
+
+Для сообщества используется ``VkBotLongPoll`` и события ``MessageNew``,
+то есть корректный механизм бота сообщества, а не пользовательский Long Poll.
+
+Запуск (локально):
+    set VK_GROUP_TOKEN=...        (Windows PowerShell: $env:VK_GROUP_TOKEN="...")
+    python scripts/vk_bot.py
+
+В GitHub Actions бот не запускается: для Long Poll нужен постоянно
+работающий процесс, а еженедельный job для этого не предназначен.
+"""
+
+from __future__ import annotations
+
 import logging
-from vk_api import VkApi
-from vk_api.longpoll import VkLongPoll, VkEventType
-from vk_api.utils import get_random_id
+import os
+import random
+import sys
+from pathlib import Path
 
-# Настройка логирования
+TOKEN_ENV_VAR = "VK_GROUP_TOKEN"
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+log = logging.getLogger("vk_bot")
 
-# Токен сообщества VK (укажите ваш токен или переменную окружения)
-VK_TOKEN = os.getenv("VK_GROUP_TOKEN", "vk1.a.OAoAC9DyPKatidruuufqJzHasG_AL_pPUfiP_dtHAQeVn9CZArgQ3kBvJD_SVrRuquFJZVaOhs2_SMOplPKiE1xHEVS2KY3WosPz5ITOI0dp1y6Lx8DCHFmx5er4A5AkvJGMjPiwL72o2o3cnOFsuIJS5hyemskeNPGJljMeF0mWyFUvN-ALsrxIknfc94kyF1Ip7m2xvVEA7rK5c5wkyw")
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
-# Поиск базы данных web_data.json
-DATA_PATHS = [
-    "generated/web_data.json",
-    "data/web_data.json",
-    "web_data.json"
-]
+DATA_PATHS = (
+    ROOT / "public" / "web_data.json",
+    ROOT / "generated" / "web_data.json",
+    ROOT / "web_data.json",
+)
 
-def load_database():
+
+def read_token() -> str | None:
+    """Возвращает токен из окружения или None. Значение не логируется."""
+    token = (os.getenv(TOKEN_ENV_VAR) or "").strip()
+    return token or None
+
+
+def load_database() -> list[dict]:
+    """Читает публичный каталог из единого контракта {metadata, data}."""
+    import json
+
     for path in DATA_PATHS:
-        if os.path.exists(path):
-            try:
-                with open(path, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                    items = data if isinstance(data, list) else data.get("items", [])
-                    logging.info(f"Загружена база данных из {path}: {len(items)} записей.")
-                    return items
-            except Exception as e:
-                logging.error(f"Ошибка чтения {path}: {e}")
-    logging.warning("Файл web_data.json не найден!")
+        if not path.exists():
+            continue
+        try:
+            with open(path, "r", encoding="utf-8") as fh:
+                payload = json.load(fh)
+            if isinstance(payload, dict) and isinstance(payload.get("data"), list):
+                records = payload["data"]
+            elif isinstance(payload, list):
+                records = payload
+            else:
+                log.warning("Файл %s имеет неожиданный формат", path)
+                continue
+            public = [r for r in records if r.get("relevance_status", "accepted") == "accepted"]
+            log.info("Загружено записей из %s: %s", path.name, len(public))
+            return public
+        except (OSError, ValueError) as exc:
+            log.error("Не удалось прочитать %s: %s", path.name, exc)
+    log.warning("Файл данных не найден")
     return []
 
-database = load_database()
 
-def search_articles(query, limit=3):
-    """Поиск статей по названию, авторам или аннотации."""
-    query_lower = query.lower().strip()
+PORTAL_URL = "https://konstantinsharotov125.github.io/"
+
+
+def search_articles(database: list[dict], query: str, limit: int = 3) -> list[dict]:
+    needle = query.lower().strip()
+    if not needle:
+        return []
     results = []
-    
     for item in database:
-        title = str(item.get("title_original") or item.get("title") or "").lower()
-        authors = str(item.get("authors") or item.get("author") or "").lower()
-        summary = str(item.get("summary_ru") or item.get("abstract") or "").lower()
-        category = str(item.get("category") or "").lower()
-        
-        if (query_lower in title) or (query_lower in authors) or (query_lower in summary) or (query_lower in category):
+        haystack = " ".join(
+            str(item.get(key) or "").lower()
+            for key in ("title_original", "authors", "abstract_ru", "abstract_original", "category")
+        )
+        if needle in haystack:
             results.append(item)
             if len(results) >= limit:
                 break
-                
     return results
 
-def format_article_message(item):
-    """Форматирование карточки статьи для VK."""
-    title = item.get("title_original") or item.get("title") or "Без названия"
+
+def format_article(item: dict) -> str:
+    from olympic_abstracts import MISSING_MESSAGE
+
+    title = item.get("title_original") or "Без названия"
     authors = item.get("authors") or "Автор не указан"
-    year = item.get("year", "2026")
-    category = item.get("category", "Олимпизм")
-    summary = item.get("summary_ru") or item.get("abstract") or "Аннотация отсутствует."
-    url = item.get("url") or "https://konstantinsharotov125.github.io/"
-    
+    year = item.get("year") or "год не указан"
+    category = item.get("category") or "Без категории"
+    summary = item.get("abstract_display") or item.get("abstract_ru") or MISSING_MESSAGE
     if len(summary) > 250:
         summary = summary[:247] + "..."
-        
-    msg = (
-        f"📖 *{title}*\n"
-        f"👤 *Авторы:* {authors} ({year})\n"
-        f"🏷 *Категория:* {category}\n\n"
-        f"📌 *Аннотация:* {summary}\n\n"
-        f"🔗 *Ссылка:* {url}"
-    )
-    return msg
+    url = item.get("url") or ""
 
-def handle_message(user_text):
-    text = user_text.strip().lower()
-    
-    # Приветствие и справка
-    if text in ["начало", "старт", "start", "помощь", "help", "меню"]:
-        return (
-            "🏛 *Добро пожаловать в Олимпийский исследовательский бот!*\n\n"
-            "Я могу помочь найти научные публикации по олимпийскому движению.\n\n"
-            "📌 *Команды:*\n"
-            "• `поиск <запрос>` — найти статьи по теме, автору или слову\n"
-            "• `статистика` — общие данные базы исследований\n"
-            "• `рандом` — случайно случайное исследование\n"
-            "• `портал` — ссылка на веб-версию портала"
-        )
+    lines = [
+        f"📖 {title}",
+        f"👤 Авторы: {authors} ({year})",
+        f"🏷 Категория: {category}",
+        "",
+        f"📌 {summary}",
+    ]
+    if url:
+        lines += ["", f"🔗 {url}"]
+    return "\n".join(lines)
 
-    # Поисковый запрос
-    if text.startswith("поиск ") or text.startswith("найти "):
-        query = user_text.split(" ", 1)[1]
-        results = search_articles(query)
-        
-        if not results:
-            return f"🔍 По запросу «{query}» ничего не найдено. Попробуйте сформулировать иначе."
-            
-        response = [f"🔎 *Результаты поиска по запросу «{query}»:*\n"]
-        for item in results:
-            response.append(format_article_message(item))
-            
-        return "\n\n──────────────\n\n".join(response)
 
-    # Статистика базы
-    if text == "статистика":
-        total = len(database)
-        categories = {}
+HELP_TEXT = (
+    "🏛 Олимпийский исследовательский бот\n\n"
+    "Команды:\n"
+    "• поиск <запрос> — найти публикации\n"
+    "• статистика — сведения о каталоге\n"
+    "• рандом — случайная публикация\n"
+    "• портал — ссылка на сайт"
+)
+
+
+def handle_message(database: list[dict], text: str) -> str:
+    from olympic_abstracts import MISSING_MESSAGE  # noqa: F401  (единая терминология)
+
+    value = (text or "").strip()
+    lowered = value.lower()
+
+    if lowered in {"начало", "старт", "start", "помощь", "help", "меню"}:
+        return HELP_TEXT
+
+    for prefix in ("поиск ", "найти "):
+        if lowered.startswith(prefix):
+            query = value[len(prefix):].strip()
+            results = search_articles(database, query)
+            if not results:
+                return f"🔍 По запросу «{query}» ничего не найдено."
+            blocks = [f"🔎 Найдено по запросу «{query}»:"]
+            blocks += [format_article(item) for item in results]
+            return "\n\n──────────────\n\n".join(blocks)
+
+    if lowered == "статистика":
+        categories: dict[str, int] = {}
         for item in database:
-            cat = item.get("category", "Другое")
-            categories[cat] = categories.get(cat, 0) + 1
-            
-        top_cat = sorted(categories.items(), key=lambda x: x[1], reverse=True)[:3]
-        top_str = "\n".join([f"• {k}: {v}" for k, v in top_cat])
-        
+            key = item.get("category") or "Без категории"
+            categories[key] = categories.get(key, 0) + 1
+        top = sorted(categories.items(), key=lambda kv: kv[1], reverse=True)[:3]
+        top_text = "\n".join(f"• {name}: {count}" for name, count in top) or "• нет данных"
         return (
-            f"📊 *Статистика Олимпийского исследовательского портала:*\n\n"
-            f"📚 Всего исследований в базе: *{total}*\n\n"
-            f"🏆 *Топ категорий:*\n{top_str}\n\n"
-            f"🌐 Веб-портал: https://konstantinsharotov125.github.io/"
+            "📊 Статистика каталога\n\n"
+            f"📚 Публикаций в каталоге: {len(database)}\n\n"
+            f"🏆 Основные направления:\n{top_text}\n\n"
+            f"🌐 {PORTAL_URL}"
         )
 
-    # Случайная статья
-    if text in ["рандом", "случайная", "случайное"]:
+    if lowered in {"рандом", "случайная", "случайное"}:
         if not database:
-            return "База данных временно недоступна."
-        item = random.choice(database)
-        return "🎲 *Случайное исследование из базы:*\n\n" + format_article_message(item)
+            return "Каталог временно недоступен."
+        return "🎲 Случайная публикация:\n\n" + format_article(random.choice(database))
 
-    # Ссылка на портал
-    if text == "портал":
-        return "🌐 Наш исследовательский портал доступен по ссылке:\nhttps://konstantinsharotov125.github.io/"
+    if lowered == "портал":
+        return f"🌐 Портал доступен по ссылке:\n{PORTAL_URL}"
 
-    # Если неизвестная команда — пробуем выполнить поиск по тексту
-    results = search_articles(user_text, limit=2)
+    results = search_articles(database, value, limit=2)
     if results:
-        response = [f"🔎 *Найдены публикации по вашей фразе «{user_text}»:*\n"]
-        for item in results:
-            response.append(format_article_message(item))
-        return "\n\n──────────────\n\n".join(response)
+        blocks = [f"🔎 Найдено по фразе «{value}»:"]
+        blocks += [format_article(item) for item in results]
+        return "\n\n──────────────\n\n".join(blocks)
 
-    return "Напишите `поиск <слово>` для поиска исследований или `помощь` для списка команд."
+    return "Напишите «поиск <слово>» или «помощь» для списка команд."
 
-def main():
-    if VK_TOKEN == "YOUR_VK_GROUP_TOKEN_HERE":
-        logging.error("Укажите VK_GROUP_TOKEN в файле или через переменную окружения!")
-        return
 
-    vk_session = VkApi(token=VK_TOKEN)
-    vk = vk_session.get_api()
-    longpoll = VkLongPoll(vk_session)
-    
-    logging.info("🤖 Бот успешно запущен и готов обрабатывать сообщения ВКонтакте...")
+def main() -> int:
+    token = read_token()
+    if not token:
+        log.error(
+            "Переменная окружения %s не задана. Бот не будет запущен. "
+            "Задайте токен сообщества в настройках окружения.",
+            TOKEN_ENV_VAR,
+        )
+        return 1
+
+    try:
+        from vk_api import VkApi
+        from vk_api.bot_longpoll import VkBotEventType, VkBotLongPoll
+        from vk_api.utils import get_random_id
+    except ImportError:
+        log.error(
+            "Библиотека vk_api не установлена. Установите зависимости: "
+            "pip install -r requirements.txt"
+        )
+        return 1
+
+    group_id = (os.getenv("VK_GROUP_ID") or "").strip()
+    if not group_id:
+        log.error(
+            "Переменная окружения VK_GROUP_ID не задана. "
+            "Для бота сообщества нужен числовой ID группы."
+        )
+        return 1
+
+    database = load_database()
+
+    vk_session = VkApi(token=token)
+    longpoll = VkBotLongPoll(vk_session, int(group_id))
+    api = vk_session.get_api()
+
+    log.info("Бот сообщества запущен, Long Poll ожидает сообщения")
 
     for event in longpoll.listen():
-        if event.type == VkEventType.MESSAGE_NEW and event.to_me:
-            user_text = event.text
-            user_id = event.user_id
-            
-            reply = handle_message(user_text)
-            
-            try:
-                vk.messages.send(
-                    user_id=user_id,
-                    message=reply,
-                    random_id=get_random_id()
-                )
-            except Exception as e:
-                logging.error(f"Ошибка отправки сообщения: {e}")
+        if event.type != VkBotEventType.MESSAGE_NEW:
+            continue
+
+        message = event.object.message
+        text = message.get("text", "")
+        peer_id = message.get("peer_id")
+        if not peer_id:
+            continue
+
+        try:
+            answer = handle_message(database, text)
+            api.messages.send(peer_id=peer_id, message=answer, random_id=get_random_id())
+        except Exception as exc:  # noqa: BLE001
+            log.error("Ошибка при обработке сообщения: %s", type(exc).__name__)
+
+    return 0
+
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
+
