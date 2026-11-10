@@ -1,0 +1,108 @@
+{
+  "input_records": 1556,
+  "accepted": 1432,
+  "rejected": 28,
+  "review": 96,
+  "duplicates_merged": 0,
+  "fake_abstracts_removed": 1104,
+  "examples_rejected": [
+    {
+      "title": "Abe Shinzo and His Legacies",
+      "reason": "В названии и аннотации нет признаков олимпийской тематики"
+    },
+    {
+      "title": "Kinematics and electromyographic analysis of the airtrack in breaking: a comparison between expert and amateur break dan",
+      "reason": "В названии и аннотации нет признаков олимпийской тематики"
+    },
+    {
+      "title": "Social Regulatory Systems: Typology, Interaction, and Stability Assessment Through the Formula of Universal Utility",
+      "reason": "В названии и аннотации нет признаков олимпийской тематики"
+    },
+    {
+      "title": "Breaking the obesity-cancer link: assessing European school-based and complementary obesity-prevention strategies and th",
+      "reason": "Тематика не относится к олимпизму: ожирение и обмен веществ, онкология"
+    },
+    {
+      "title": "Analysis of the dynamics of the global advertising market: growth drivers and development prospects",
+      "reason": "В названии и аннотации нет признаков олимпийской тематики"
+    },
+    {
+      "title": "A Sharp Melt‐Bearing Lithosphere–Asthenosphere Boundary Beneath the Korean Peninsula: Evidence From Teleseismic Receiver",
+      "reason": "В названии и аннотации нет признаков олимпийской тематики"
+    },
+    {
+      "title": "ТЕХНОЛОГИЯ ИССЛЕДОВАНИЯ СОВРЕМЕННЫХ СООБЩЕСТВ НА ПРИМЕРЕ ИЗУЧЕНИЯ ПСИХОЛОГИЧЕСКИХ ОСОБЕННОСТЕЙ САМОКОНСТРУИРОВАНИЯ ЖИЗНЕ",
+      "reason": "В названии и аннотации нет признаков олимпийской тематики"
+    },
+    {
+      "title": "IMPACT OF SAUNA BATHING ON GENERAL HEALTH - THE LATEST REPORTS",
+      "reason": "Тематика не относится к олимпизму: баня и общее здоровье"
+    },
+    {
+      "title": "From “Growth” to “Healing”",
+      "reason": "В названии и аннотации нет признаков олимпийской тематики"
+    },
+    {
+      "title": "Redes geográficas musicais e festas: discussões a partir do Festival Honk! no Rio de Janeiro",
+      "reason": "В названии и аннотации нет признаков олимпийской тематики"
+    },
+    {
+      "title": "Deformation-enhanced fluid evolution and skarn–IOCG transition in the Paleoproterozoic Elaine Dorothy Cu–Au system, Moun",
+      "reason": "В названии и аннотации нет признаков олимпийской тематики"
+    },
+    {
+      "title": "How do we teach English under the waves of innovation?: discovering perceptions of English learning and teaching in Chin",
+      "reason": "В названии и аннотации нет признаков олимпийской тематики"
+    }
+  ],
+  "examples_review": [
+    {
+      "title": "Beyond the Games: Sustainable Infrastructure for Staycations",
+      "reason": "Упоминается спорт, но связь с олимпийским движением не подтверждена"
+    },
+    {
+      "title": "“Should I stay or should I go?” Is there a use by date on coach-athlete relationships? Shifting, temporal and contextual",
+      "reason": "Упоминается спорт, но связь с олимпийским движением не подтверждена"
+    },
+    {
+      "title": "The British colonial legacy: sport and politics in multi-ethnic Malaysia from 1800 to 2000",
+      "reason": "Найдено лишь общее упоминание олимпийской тематики без содержательного контекста"
+    },
+    {
+      "title": "Mega Sport Events Infrastructure Effect on Social Legacy",
+      "reason": "Упоминается спорт, но связь с олимпийским движением не подтверждена"
+    },
+    {
+      "title": "Beyond the boundary: locating a more adequate framework to study the global development of cricket outside the British E",
+      "reason": "Упоминается спорт, но связь с олимпийским движением не подтверждена"
+    },
+    {
+      "title": "Architectural Design Strategies for Enhanced Crowd Management in Aquatic Centers",
+      "reason": "Найдено лишь общее упоминание олимпийской тематики без содержательного контекста"
+    },
+    {
+      "title": "Sport Event Branding",
+      "reason": "Упоминается спорт, но связь с олимпийским движением не подтверждена"
+    },
+    {
+      "title": "Разработка визуального образа и комплекса рекламных материалов для Лиги Киберспорта ЮУрГУ",
+      "reason": "Упоминается спорт, но связь с олимпийским движением не подтверждена"
+    },
+    {
+      "title": "Сравнительный анализ методик спортивной подготовки по прыжкам с шестом в России и США",
+      "reason": "Упоминается спорт, но связь с олимпийским движением не подтверждена"
+    },
+    {
+      "title": "A Study on Sport Events as Catalysts for Destination Repositioning and Place Branding Strategies",
+      "reason": "Упоминается спорт, но связь с олимпийским движением не подтверждена"
+    },
+    {
+      "title": "Hidden and Powerful: The Discursive Othering of a Chinese Female Athlete",
+      "reason": "Найдено лишь общее упоминание олимпийской тематики без содержательного контекста"
+    },
+    {
+      "title": "Between Rock and Stone: Embodiement, Disorientation and the Queering of Climbing Spaces",
+      "reason": "Упоминается спорт, но связь с олимпийским движением не подтверждена"
+    }
+  ]
+}
